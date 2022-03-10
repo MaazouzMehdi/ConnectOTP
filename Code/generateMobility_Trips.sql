@@ -1,6 +1,6 @@
 
 DROP TYPE IF EXISTS step CASCADE;
-CREATE TYPE step as (wkb_geometry geometry,route_leg_from_lat double precision, route_leg_from_lon double precision,route_leg_starttime timestamp,route_leg_endtime timestamp,route_leg_distance float);
+CREATE TYPE step as (geom geometry,route_leg_from_lat double precision, route_leg_from_lon double precision,route_leg_starttime timestamp,route_leg_endtime timestamp,route_leg_distance float);
 /*
 
 DROP FUNCTION IF EXISTS linkedStib_street;
@@ -78,7 +78,7 @@ DECLARE
 	notrips int;
 BEGIN
 	
-	p1 = ST_PointN((trip[1]).wkb_geometry, 1);
+	p1 = ST_PointN((trip[1]).geom, 1);
 	curtime = (trip[1]).route_leg_starttime;
 	instants[1] = tgeompoint_inst(p1, curtime);
 	l=2;
@@ -91,7 +91,7 @@ BEGIN
 			curtime = curtime + 100 * interval '1 ms';
 		END LOOP;
 		
-		linestring = (trip[i]).wkb_geometry;
+		linestring = (trip[i]).geom;
 		SELECT array_agg(geom ORDER BY path) INTO points FROM ST_DumpPoints(linestring);
 		
 		noSegs = array_length(points, 1) - 1;
@@ -139,14 +139,14 @@ BEGIN
 		target bigint, trip tgeompoint, trajectory geometry,
 		PRIMARY KEY (id));
 	
-	select max(route_routeid) from routes into notrips;
+	select max(route_routeid) from "Routes" into notrips;
 	For i in 1..notrips LOOP
-		SELECT array_agg((wkb_geometry,route_leg_from_lat, route_leg_from_lon,route_leg_starttime,route_leg_endtime,route_leg_distance)::step ORDER BY route_legid) INTO path
-					FROM routes where route_routeid = i;
+		SELECT array_agg((geom,route_leg_from_lat, route_leg_from_lon,route_leg_starttime,route_leg_endtime,route_leg_distance)::step ORDER BY route_legid) INTO path
+					FROM "Routes" where route_routeid = i;
 		
-		select route_from_starttime from routes into d limit 1;
-		select source_id from routes into nodeSource limit 1;
-		select target_id from routes into nodeTarget limit 1;
+		select route_from_starttime from "Routes" into d limit 1;
+		select source_id from "Routes" into nodeSource limit 1;
+		select target_id from "Routes" into nodeTarget limit 1;
 		
 		trip = generatetrip(path);
 		INSERT INTO MobilityTrips VALUES
@@ -156,6 +156,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql STRICT;
 
+COMMIT;
 SELECT createTrips();
 --SELECT openTrip();
 
