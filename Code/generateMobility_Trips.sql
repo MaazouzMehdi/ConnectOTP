@@ -139,14 +139,14 @@ BEGIN
 		target bigint, trip tgeompoint, trajectory geometry,
 		PRIMARY KEY (id));
 	
-	select max(route_routeid) from "Routes" into notrips;
+	select max(route_routeid) from routes into notrips;
 	For i in 1..notrips LOOP
 		SELECT array_agg((geom,route_leg_from_lat, route_leg_from_lon,route_leg_starttime,route_leg_endtime,route_leg_distance)::step ORDER BY route_legid) INTO path
-					FROM "Routes" where route_routeid = i;
+					FROM routes where route_routeid = i;
 		
-		select route_from_starttime from "Routes" into d limit 1;
-		select source_id from "Routes" into nodeSource limit 1;
-		select target_id from "Routes" into nodeTarget limit 1;
+		select route_from_starttime from routes into d limit 1;
+		select source_id from routes into nodeSource limit 1;
+		select target_id from routes into nodeTarget limit 1;
 		
 		trip = generatetrip(path);
 		INSERT INTO MobilityTrips VALUES
