@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+import sys
 import os
 import json
 import datetime
@@ -6,6 +9,8 @@ import urllib
 import urllib.request
 import psycopg2
 
+#TODO permettre un port different
+#TODO
 
 def getCoordinate(response) :
 	res = []
@@ -13,6 +18,32 @@ def getCoordinate(response) :
 		for i in coordinate :
 			res.append(i[6:-1])
 	return res
+
+def setParameters(parameters) :
+	if len(parameters) == 0 :
+		tempo_parameters = []
+	else :	
+		tempo_parameters = parameters.split(' ')
+	res = {}
+	for i in range (0,len(tempo_parameters)) :
+		res[tempo_parameters[i].split('=')[0]]=tempo_parameters[i].split('=')[1]
+	if 'date' not in res :
+		res['date']= str(datetime.date.today())
+	if 'time' not in res :
+		now = datetime.datetime.now()
+		res['time'] = now.strftime("%H:%M:%S")
+	if 'mode' not in res:
+		res['mode']='WALK,TRANSIT'
+	if 'numItineraries' not in res :
+		res['numItineraries'] = '1'
+	return res
+
+def matchNodes() :
+	sql = "SELECT s.id, t.id from optstart s, opttarget t where s.id = t.ein;"
+	cur.execute(sql)
+	response = cur.fetchall()
+	return response
+	
 
 def decode_polyline(polyline_str):
 	index, lat, lng = 0, 0, 0
@@ -48,11 +79,11 @@ def decode_polyline(polyline_str):
 		pointlist.append(qgspointgeom)
 	return pointlist
 
-#TODO mettre parametre commande connexion
-#conn = psycopg2.connect("host=localhost dbname=brusselsOTP user=postgres password=")
+
+conn = psycopg2.connect("host="+str(sys.argv[1])+" dbname="+str(sys.argv[2])+" user="+str(sys.argv[3])+" password="+sys.argv[4])
 cur = conn.cursor()
 
-match_item = [(15718,26834),(17232,24567)]
+match_item = matchNodes()
 sql = "DROP TABLE IF EXISTS ROUTES;"
 cur.execute(sql)
 sql = "CREATE TABLE ROUTES (route_legid int,route_routeid int,route_from_starttime timestamp, route_leg_starttime timestamp, route_leg_distance double precision, route_leg_endtime timestamp, route_leg_from_lat double precision, route_leg_from_lon double precision, source_id bigint, target_id bigint, geom geometry);"
@@ -60,14 +91,15 @@ cur.execute(sql)
 
 route_routeid = 0
 route_legid = 0
+parameters = input("please enter the desired parameters ( key=value ) : ")
+d_parameters = setParameters(parameters)
+   
 
 for source, target in match_item :
-	
 	source_id = source
 	cur.execute('SELECT st_astext(the_geom) from optstart where id='+str(source)+';')
 	response = cur.fetchall()
 	coordinate_start = getCoordinate(response)
-	print(coordinate_start)
 	
 	target_id = target
 	cur.execute('SELECT st_astext(the_geom) from opttarget where id='+str(target)+';')
@@ -76,9 +108,10 @@ for source, target in match_item :
 	
 	coordinate_start=coordinate_start[0].split(' ')
 	coordinate_target=coordinate_target[0].split(' ')
-	route_url = 'http://localhost:8080/otp/routers/default/plan?fromPlace='+coordinate_start[1]+','+coordinate_start[0]+'&toPlace='+coordinate_target[1]+','+coordinate_target[0]+'&mode=WALK,TRANSIT&date=2022-03-09&time=11:00:00&numItineraries=1&optimize=TRANSFERS'
-	
-	route_headers = {"accept":"application/json"} # this plugin only works for json responses
+	route_url = 'http://localhost:8080/otp/routers/default/plan?fromPlace='+coordinate_start[1]+','+coordinate_start[0]+'&toPlace='+coordinate_target[1]+','+coordinate_target[0]
+	for key in d_parameters :
+		route_url = route_url +'&'+key+'='+d_parameters[key]
+	route_headers = {"accept":"application/json"}
 	route_request = urllib.request.Request(route_url, headers=route_headers)
 	route_response = urllib.request.urlopen(route_request)
 	response_data = route_response.read()
@@ -108,7 +141,6 @@ for source, target in match_item :
 		route_leg_totaldistcounter = 0
 		#route_legid = 0 #TODO verifier si c'est bien ici
 		for leg in iter['legs']:
-			print(1)
 			route_legid += 1
 			route_leg_starttime = leg['startTime']
 			route_leg_departuredelay = leg['departureDelay']
@@ -133,15 +165,8 @@ for source, target in match_item :
 				sql1 = sql1 + "ST_Point("+str(coordinate[0])+","+str(coordinate[1])+"),"
 			sql1 = sql1[:-1]
 			sql1 = sql1 +']),4326)'
-			#cur.execute(sql)
-			#geom = cur.fetchall()
-			
-			#print(geom[0][0])
-			
-			route_from_starttime = datetime.datetime.fromtimestamp(route_from_starttime/1000)
-			route_leg_starttime = datetime.datetime.fromtimestamp(route_leg_starttime/1000)
-			route_leg_endtime = datetime.datetime.fromtimestamp(route_leg_endtime/1000)
-			sql = "INSERT INTO ROUTES VALUES("+str(route_legid)+","+str(route_routeid)+",TIMESTAMP '"+str(route_from_starttime)+"',TIMESTAMP '"+str(route_leg_starttime)+"',"+str(route_leg_distance)+",TIMESTAMP '"+str(route_leg_endtime)+"',"+str(route_leg_from_lat)+","+str(route_leg_from_lon)+","+str(source_id)+","+str(target_id)+","+str(sql1)+");"
+
+			sql = "INSERT INTO ROUTES VALUES("+str(route_legid)+","+str(route_routeid)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_from_starttime/1000))+"',TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_starttime/1000))+"',"+str(route_leg_distance)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_endtime/1000))+"',"+str(route_leg_from_lat)+","+str(route_leg_from_lon)+","+str(source_id)+","+str(target_id)+","+str(sql1)+");"
 			#print(sql)
 			cur.execute(sql)
 
