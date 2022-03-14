@@ -9,10 +9,10 @@ Requirements
 *   PostgreSQL >= 10
 *   PostGIS >= 2.5
 *	Python >= 3.0
+	* As well as a compatible version of pip 
 *   MobilityDB 1.0
 *   JSON-C
 *   QGis 3.22 Białowieża and its two modules
-	* OpenTripPlanner Plugin ( On Qgis go to plugins-> Manage and Install plugins -> All -> type OpenTripPlanner plugin on search bar )
 	* Move ( https://github.com/mschoema/move )
 
 Building & Tutorial

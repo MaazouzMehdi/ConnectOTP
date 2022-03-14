@@ -9,8 +9,9 @@ import urllib
 import urllib.request
 import psycopg2
 
+''' A part of this code comes from the OpenTripPlanner Plugin :
+	You'll find the repository here : https://github.com/mkoenigb/OpenTripPlannerPlugin '''
 #TODO permettre un port different
-#TODO
 
 def getCoordinate(response) :
 	res = []
@@ -45,6 +46,7 @@ def matchNodes() :
 	return response
 	
 
+# Source: https://stackoverflow.com/a/33557535/8947209 (slightly modified)
 def decode_polyline(polyline_str):
 	index, lat, lng = 0, 0, 0
 	#coordinates = []
@@ -74,7 +76,6 @@ def decode_polyline(polyline_str):
 		lat += changes['latitude']
 		lng += changes['longitude']
 		
-		#qgspointgeom = QgsPoint(float(lng / 100000.0),float(lat / 100000.0))
 		qgspointgeom = (float(lng / 100000.0),float(lat / 100000.0))
 		pointlist.append(qgspointgeom)
 	return pointlist
