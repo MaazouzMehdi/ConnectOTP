@@ -87,7 +87,7 @@ cur = conn.cursor()
 match_item = matchNodes()
 sql = "DROP TABLE IF EXISTS ROUTES;"
 cur.execute(sql)
-sql = "CREATE TABLE ROUTES (route_legid int,route_routeid int,route_from_starttime timestamp, route_leg_starttime timestamp, route_leg_distance double precision, route_leg_endtime timestamp, route_leg_from_lat double precision, route_leg_from_lon double precision, source_id bigint, target_id bigint, geom geometry);"
+sql = "CREATE TABLE ROUTES (route_legid int,route_routeid int,route_from_starttime timestamp, route_leg_starttime timestamp, route_leg_distance double precision, route_leg_endtime timestamp, route_leg_from_lat double precision, route_leg_from_lon double precision, source_id bigint, target_id bigint,route_leg_mode text, geom geometry);"
 cur.execute(sql)
 
 route_routeid = 0
@@ -112,6 +112,7 @@ for source, target in match_item :
 	route_url = 'http://localhost:8080/otp/routers/default/plan?fromPlace='+coordinate_start[1]+','+coordinate_start[0]+'&toPlace='+coordinate_target[1]+','+coordinate_target[0]
 	for key in d_parameters :
 		route_url = route_url +'&'+key+'='+d_parameters[key]
+	
 	route_headers = {"accept":"application/json"}
 	route_request = urllib.request.Request(route_url, headers=route_headers)
 	route_response = urllib.request.urlopen(route_request)
@@ -123,12 +124,27 @@ for source, target in match_item :
 	route_from_lon = route_data['plan']['from']['lon']
 	#route_from_stopid = route_data['plan']['from']['stopId']
 	#route_from_stopcode = route_data['plan']['from']['stopCode']
-	route_from_name = route_data['plan']['from']['name']
+	
+	try :
+		route_from_name = route_data['plan']['from']['name']
+	except :
+		cur.execute('DELETE from optstart where id='+str(source)+';')
+		cur.execute('DELETE from opttarget where id='+str(target)+';')
+		continue
+	
+	try :
+		route_errormessage = route_data['error']['message']
+		if route_errormessage == 'LOCATION_NOT_ACCESSIBLE' :
+			cur.execute('DELETE from optstart where id='+str(source)+';')
+			cur.execute('DELETE from opttarget where id='+str(target)+';')
+			continue
+	except :
+		pass
 	route_to_lat = route_data['plan']['to']['lat']
 	route_to_lon = route_data['plan']['to']['lon']
 	#route_to_stopid = route_data['plan']['to']['stopId']
 	#route_to_stopcode = route_data['plan']['to']['stopCode']
-	route_to_name = route_data['plan']['to']['name']
+	#route_to_name = route_data['plan']['to']['name']
 	for iter in route_data['plan']['itineraries']:
 		route_routeid += 1
 		route_from_starttime = iter['startTime']
@@ -166,9 +182,9 @@ for source, target in match_item :
 				sql1 = sql1 + "ST_Point("+str(coordinate[0])+","+str(coordinate[1])+"),"
 			sql1 = sql1[:-1]
 			sql1 = sql1 +']),4326)'
-
-			sql = "INSERT INTO ROUTES VALUES("+str(route_legid)+","+str(route_routeid)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_from_starttime/1000))+"',TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_starttime/1000))+"',"+str(route_leg_distance)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_endtime/1000))+"',"+str(route_leg_from_lat)+","+str(route_leg_from_lon)+","+str(source_id)+","+str(target_id)+","+str(sql1)+");"
-			#print(sql)
+			
+			
+			sql = "INSERT INTO ROUTES VALUES("+str(route_legid)+","+str(route_routeid)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_from_starttime/1000))+"',TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_starttime/1000))+"',"+str(route_leg_distance)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_endtime/1000))+"',"+str(route_leg_from_lat)+","+str(route_leg_from_lon)+","+str(source_id)+","+str(target_id)+", '"+route_leg_mode+"',"+str(sql1)+");"
 			cur.execute(sql)
 
 conn.commit()

@@ -35,3 +35,17 @@ Here you can see 35 people making a trip through the city of Brussels.
 Here you can see a person walking from point A to point B while a second person makes the same journey, at the same time, by public transport
 (The video has been accelerated)
 ![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/comparisonTrip.gif?raw=true)
+
+Here you can see a person making a trip from point A to point B
+The green dot represents the person walking
+The yellow dot represents the person waiting
+The red dot represents the person making the trip by public transport
+(The video has been accelerated)
+![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/advancedtrip.gif?raw=true)
+
+Here you can see a lot of people making trip in Brussels
+The green dot represents people walking
+The yellow dot represents people waiting
+The red dot represents people making the trip by public transport
+(The video has been accelerated)
+![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/73advancedtrips.gif?raw=true)
