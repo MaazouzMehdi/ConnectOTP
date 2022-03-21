@@ -36,7 +36,7 @@ def setParameters(parameters) :
 	if 'mode' not in res:
 		res['mode']='WALK,TRANSIT'
 	if 'numItineraries' not in res :
-		res['numItineraries'] = '1'
+		res['numItineraries'] = '2'
 	return res
 
 def matchNodes() :
