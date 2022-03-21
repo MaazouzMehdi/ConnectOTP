@@ -49,4 +49,5 @@ The green dot represents people walking
 The yellow dot represents people waiting
 The red dot represents people making the trip by public transport
 (The video has been accelerated)
+
 ![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/73advancedtrips.gif?raw=true)
