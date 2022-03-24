@@ -27,9 +27,9 @@
 		<pubdate><?dbtimestamp format="Y-m-d"?>.</pubdate>
 		<abstract>
 			<para>
-				This project aims to generate trajectories using <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and apply <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> on them.
-				This project is open source and its code is available on <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">Github</ulink>
-
+				This workshop is about generating trajectories using <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and connect <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> on those trajectories.
+				This workshop is open source and its code is available on <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">Github</ulink>
+        The vilualization will be done by <ulink url="https://www.qgis.org/en/site/">Qgis</ulink>
 			</para>
 
 			<para>
@@ -38,7 +38,7 @@
 
 
 			<para>
-				This is the workshop for ConnectOTP. Feel free to use this material any way you like.
+				This is the workshop for ConnectOTP.  Feel free to use this material any way you like.
 			</para>
 
 		</abstract>

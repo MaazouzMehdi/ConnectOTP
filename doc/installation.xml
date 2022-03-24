@@ -1,22 +1,28 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <chapter id ="installation">
-  	<title>Installation</title>
+  	<title>Getting project</title>
         <sect1 id="github">
             <title>Github</title>
-                <para>Please go to the official Github page of the project and download the various files there. Or simply clone the project.
-                <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">here</ulink>is the link going to the Github page. This project contains several files:</para>
+                <para>Please go to the official <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">github</ulink> page of the project and download the various files there, or simply clone the project.
+                Here is the commang to clone the repository</para>
+                
+                <programlisting xml:space="preserve">
+$ git clone https://github.com/MaazouzMehdi/ConnectOTP.git
+              </programlisting>
+              
+            <para>This project contains several files, here is a brief overview :</para>
                 
                 <itemizedlist>
-			              <listitem><para>workshop/ is the folder containing the file you are reading</para></listitem>
+                     <listitem><para>doc/ contains the necesseray files to generate this workshop.</para></listitem>
                     <listitem><para>src/ contains the sql and python files that will allow the generation of MobilityTrips.</para></listitem>
-			              <listitem><para>otpData/ contains the files necessary for the WEB OTP server to function properly. These files are:</para></listitem>
-                    <itemizedlist>
-                          <listitem><para>brussels.pbf corresponds to the brussels.osm file reduced</para></listitem>
-                          <listitem><para>stib-gtfs.zip corresponds to the GTFS data of the Stib covering the months of March 2022 to April 2022</para></listitem>
-                          <listitem><para>tec-gtfs.zip corresponds to the GTFS data of the TEC covering the months of March 2022 to May 2022</para></listitem>
-                           <listitem><para>build-config.json contains options and parameters that are taken into account during the graph building process</para></listitem>
-                  </itemizedlist>
+			              <listitem><para>otpData/ contains the files necessary for the WEB OTP server to function properly. These files are :  
+			                    <itemizedlist>
+			                        <listitem><para>brussels.pbf corresponds to the brussels.osm file reduced</para></listitem>
+                              <listitem><para>stib-gtfs.zip corresponds to the GTFS data of the Stib covering the months of March 2022 to April 2022</para></listitem>
+                              <listitem><para>tec-gtfs.zip corresponds to the GTFS data of the TEC covering the months of March 2022 to May 2022</para></listitem>
+                               <listitem><para>build-config.json contains options and parameters that are taken into account during the graph building process</para></listitem>
+                          </itemizedlist></para></listitem>
                 </itemizedlist>
     </sect1>
 </chapter>

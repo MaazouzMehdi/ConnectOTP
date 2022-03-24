@@ -116,8 +116,6 @@ BEGIN
 		SELECT array_agg(geom ORDER BY path) INTO points FROM ST_DumpPoints(linestring);
 		
 		noSegs = array_length(points, 1) - 1;
-		--RAISE INFO 'START %',(trip[i]).route_leg_starttime;
-		--RAISE INFO 'END %',(trip[i]).route_leg_endtime;
 		IF EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime) = 0 THEN
 			speed = 0.001;
 		ELSE
@@ -150,7 +148,7 @@ $$ LANGUAGE plpgsql STRICT;
 
 
 DROP FUNCTION IF EXISTS createTrips;
-CREATE OR REPLACE FUNCTION createTrips()
+CREATE OR REPLACE FUNCTION createTrips(comparison text)
 RETURNS void AS $$
 DECLARE
 	trip tgeompoint;
@@ -182,12 +180,14 @@ BEGIN
 	select max(route_legid) from routes into maxleg;
 	
 	For actualtrip in 1..notrips LOOP
-		
-		-- Verification in order to delete first itinary composed only of walk 
-		select source_id from routes into actual_source where actualtrip=route_routeid;
-		if actualtrip != notrips THEN
-			select source_id from routes into next_source where actualtrip+1=route_routeid;
-			continue when actual_source=next_source;
+		Raise Info 'comparison %',comparison;
+		IF comparison !='1' THEN
+			-- Verification in order to delete first itinary composed only of walk 
+			select source_id from routes into actual_source where actualtrip=route_routeid;
+			IF actualtrip != notrips THEN
+				select source_id from routes into next_source where actualtrip+1=route_routeid;
+				continue when actual_source=next_source;
+			END IF;
 		END IF;
 			
 		select min(route_legid) from routes into baseleg where route_routeid=actualtrip;
@@ -230,7 +230,7 @@ END;
 $$ LANGUAGE plpgsql STRICT;
 
 COMMIT;
-SELECT createTrips();
+SELECT createTrips(:o);
 --RAISE INFO 'Advanced display enabled on QGis';
 
 DROP TABLE if EXISTS stibtrip CASCADE;

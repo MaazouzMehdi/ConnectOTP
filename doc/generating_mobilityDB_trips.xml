@@ -2,33 +2,39 @@
 
 <chapter id ="generating_mobilityDB_trips">
   	<title>Generate MobilityDB trips</title>
+  	      
   	
-  	<para>Once the various tools have been installed and configured. We can start generating MobilityDB trips from trips obtained via OpenTripPlanner. To do this, we will randomly generate source and target nodes that will be used in the calculation of the trips.</para>
+  	<para>Once the various tools have been installed and configured. We can start generating MobilityDB trips from trips obtained via OpenTripPlanner.</para> 
+      <sect1 id="multi_modal_trip">
+            <title>A Multi-Modal Trip</title>  	
+        
+        <para>First, we will generate a multi-modal trip for a person wanting to travel from a point A to a point B in Brussels.
+        To do this, we will randomly generate a source and a target nodes that will be used in the calculation of the trip.</para>
   	
   	 <programlisting xml:space="preserve">
-  	 $ psql -h localhost -U postgres -d brusselsOTP  -f ./src/combination.sql -v o=10
-	    -- -v o=10 means we want to generate 10 source nodes and 10 target nodes
+$ psql -h localhost -U postgres -d brusselsOTP  -f ./src/combination.sql -v o=1
+-- -v o=1 means we want to generate 1 source node and 1 target node
 	    </programlisting>
 	    
-	    <para>We will now contact the OpenTripPlanner API to generate trips, and convert them to be compatible with a PostgreSQL database.
+	    <para>We will now contact the OpenTripPlanner API to generate the trip, and parse it into a PostgreSQL database called <varname>routes</varname>.
                     Please make sure you have started the OTP server before doing this.</para>
                     
       <programlisting xml:space="preserve">
-      -- in a console at the root of your project :
-      $ python ./src/manageOTP.py localhost brusselsOTP dbowner password 
+-- in a console at the root of your project :
+$ python ./src/manageOTP.py localhost brusselsOTP dbowner password 
 
-      -- as usual, replace dbowner by your database user
-      -- replace password by your database user's password
+-- as usual, replace dbowner by your database user
+-- replace password by your database user's password
       </programlisting>
       
-      <para>Running this command will prompt you to enter parameters to better define the trips you want to create.
-                      Below are some examples of parameters you might want to enter. OpenTripPlanner is full of parameters, a full list can be found at this <ulink url="http://dev.opentripplanner.org/apidoc/1.0.0/resource_PlannerResource.html">address</ulink></para>
+      <para>Running this command will prompt you to enter parameters to better define the trip you want to create.
+                      Below are some examples of parameters you might want to enter. OpenTripPlanner is full of parameters, a exhaustive list can be found at this <ulink url="http://dev.opentripplanner.org/apidoc/1.0.0/resource_PlannerResource.html">address</ulink></para>
         
-      <para> the desired format is presented as follows : key=value.
-                      Here is an example you could enter in the console when you run OTPManage.py</para>
+      <para> the desired format is presented as follows : <varname>key=value</varname></para>
+      <para>Here is an example you could enter in the console when you run <varname>manageOTP.py</varname></para>
       
       <programlisting xml:space="preserve">
-      please enter the desired parameters ( key=value ) :  arriveBy=true optimize=QUICK
+please enter the desired parameters ( key=value ) : arriveBy=true optimize=QUICK
       </programlisting>
       
       <para>You could found below some parameters you put enter :</para>
@@ -42,73 +48,97 @@
       </itemizedlist>
       
       <para>If you wish, you can press "Enter" directly. In this way, the default values will be taken into account.
-                      Note that the default date represents the current day, the default time represents the current time.</para>
+                      Note that the default <varname>date</varname> represents the current day, the default <varname>time</varname> represents the current time.</para>
 
-      <para>Please note that the baseline GTFS data covers the months of March 2022. If you are doing this Workshop later, please enter a specific date that is taken into account by the GTFS data</para>
+      <para>Please note that the baseline GTFS data covers the months of March 2022. If you are doing this workshop later, please enter a specific date that is taken into account by the GTFS data</para>
       
-      <para>For the sake of this WorkShop, we have changed the default value of the mode parameter. Originally WALK, it is now WALK,TRANSIT.
-                      The reason being that this Workshop deals with multi-modal routing, so there is no point in using only your feet to do the trips. Moreover, we changed the default value numItineraries=1 by numItineraries=2 mainly because the default value only takes account the WALK trip.</para>
+      <para>For the sake of this workshop, we have changed the default value of the <varname>mode</varname>parameter. Originally <varname>WALK</varname>, it is now <varname>WALK,TRANSIT</varname>.
+                      The reason being that this workshop deals with multi-modal routing, so there is no point in using only your feet to do the trips. Moreover, we changed the default value <varname>numItineraries=1</varname> by  <varname>numItineraries=2</varname> mainly because the default value only takes account the WALK trip.</para>
       
-      <para>Now we just need to run one last sql script to generate the mobility trips.</para>
+      <para>In our case, when the prompt below appears, we click immediately on Enter </para>
+      
       <programlisting xml:space="preserve">
-      -- in a console at the root of your project
-      $ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.sql
-      -- We generate MobilityDB trips
+please enter the desired parameters ( key=value ) :
+      </programlisting>      
+      
+      <para>Now we just need to run one last sql script to generate the mobility trip.</para>
+      <programlisting xml:space="preserve">
+-- in a console at the root of your project
+$ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.sql
+-- We generate MobilityDB trips
        </programlisting>
        
        <para>We now have the mobilitytrips table containing our tgeompoints.
-        As well as a table stibtrip containing our tgeompoints which represents a trip by public transport, a table waittrip which represents people waiting for their transfer and a table walktrip which represents people walking.</para>
+        As well as a table <varname>stibtrip</varname> containing our tgeompoints which represents the part by public transport, a table <varname>waittrip</varname> which represents the waiting for a transfer and a table <varname>walktrip</varname> which represents walking part.</para>
 
-      <para>Now let's go to Qgis and open a connection to our BrusselsOTP Database. Once done, click on the optstart and opttarget tables to display the source nodes and taget nodes. The generated nodes are random, so there is a good chance that you will have other nodes</para>
-      
-      <para>
-				  <inlinemediaobject>
-					  <imageobject>
-						  <imagedata fileref='../images/01.png' width='500pt' />
-					  </imageobject>
-				  </inlinemediaobject>
-      </para>
-			  
-			<para>We can display our mobilitytrips table on QGis. However, in order to be able to visualize our points (people) moving in time, we will use the Move module.</para>
-			
-      <para>
-				  <inlinemediaobject>
-					  <imageobject>
-						  <imagedata fileref='../images/05.png' width='500pt' />
-					  </imageobject>
-				  </inlinemediaobject>
-      </para>
-      
+      <para>Now let's go to Qgis and open a connection to our BrusselsOTP Database. Once done, click on the <varname>optstart</varname> and <varname>opttarget</varname> tables to display the source node and taget node. The generated nodes are random, so there is a good chance that you will have other nodes</para>
+      			  
+			<para>We can display our <varname>mobilitytrips</varname> table on QGis. However, in order to be able to visualize our points (people) moving in time, we will use the Move module.</para>
+			      
       <para>In order to visualize the points in a temporal way, we just need to use the Move plugin (installed previously). Click on the plugin to display a window at the bottom where you insert the 
-                      following query and then, click on execute. This will create a temporal layer. Open the controller panel (View->Panels->Temporal Controller Panel) and you can then see the moving points move over time.</para>
+                      following queries and then, click on execute. This will create temporal layers. Open the controller panel (View->Panels->Temporal Controller Panel) and you can then see the moving points move over time.</para>
       
       <programlisting xml:space="preserve">
-        -- on the plugin Move in Qgis
-        select trip from mobilitytrips
+-- on the plugin Move in Qgis
+select trip as walktrip from walktrip
+select trip as waittrip from waittrip
+select trip as stibtrip from stibtrip
       </programlisting>
       
       <para>Please note that in Belgium we are in UTC+1. I'm currently having trouble displaying the correct time on Move.
                       Therefore, if you generate trips between 04:00 pm and 04:30 pm for example, the display of the points on Move will be between 03:00 pm and 03h30 pm.</para>
       
+      <para>You should have a similar result, the green dot representing the person walking, the red dot representing the person moving in a public transport (tram, bus, metro) and the yellow dot representing the person waiting for a transfer</para>
       <para>
 				  <inlinemediaobject>
 					  <imageobject>
-						  <imagedata fileref='../images/06.png' width='500pt' />
+						  <imagedata fileref='../images/advancedtripfoot.png' width='500pt' />
 					  </imageobject>
 				  </inlinemediaobject>
       </para>
       
-      <para>If you want a more advanced display to better differentiate between trips by foot and by public transport.
-                    Simply insert these 3 queries in the Move window in Qgis :</para>
+            <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/advancedtripstib.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
       
-      <programlisting xml:space="preserve">
-      select trip as walktrip from walktrip
-      select trip as waittrip from waittrip
-      select trip as stibtrip from stibtrip
+            <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/advancedtripwait.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+
+    </sect1>
+    
+    <sect1 id="people_moving_in_brussels">
+      <title>People moving in Brussels</title>
+      <para>We will now generate multi-modal trips for a multitude of people. The principle is the same as before, except for the number of sources and target nodes generated.</para>
+        
+        <programlisting xml:space="preserve">
+$ psql -h localhost -U postgres -d brusselsOTP  -f ./src/combination.sql -v o=40
+-- -v o=40 means we want to generate 40 source nodes and 40 target nodes
+$ python ./src/manageOTP.py localhost brusselsOTP dbowner password
+
+please enter the desired parameters ( key=value ) : ( Click on Enter )
+
+$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql
+	    </programlisting>
+
+      <para>Inside Move module in Qgis</para>
+      
+    <programlisting xml:space="preserve">
+-- on the plugin Move in Qgis
+select trip as walktrip from walktrip
+select trip as waittrip from waittrip
+select trip as stibtrip from stibtrip
       </programlisting>
       
-      <para>Here is one result you might get :</para>
-      
+      <para> Here is the result</para>
       <para>
 				  <inlinemediaobject>
 					  <imageobject>
@@ -116,6 +146,39 @@
 					  </imageobject>
 				  </inlinemediaobject>
       </para>
+      
+      </sect1>
+      
+          <sect1 id="comparison">
+      <title>Comparison with alternatives itineraries</title>
+      
+      <para>You can also generate multiple itineraries for a single trip. In this workshop, we will take a simple example by comparing only 2 itineraries proposed to one person.</para>
+      
+      <programlisting xml:space="preserve">
+$ psql -h localhost -U postgres -d brusselsOTP  -f ./src/combination.sql -v o=1
+-- -v o=1 means we want to generate 1 source nodes and 1 target nodes
+$ python ./src/manageOTP.py localhost brusselsOTP dbowner password
+
+please enter the desired parameters ( key=value ) : ( Click on Enter )
+
+$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql
+	    </programlisting>
+      
+      <para>But if you want, you could generate several itineraries for one trip by giving the value you want to the parameter <varname>numItineraries</varname> and generate several trips </para>
+      
+            <para> Below you see the red line representing a multi-modal trip ( the red dot representing a person taking a public transport ) while the green line represents the trip by foot.
+            Then, you see that the multi-modal trip is faster than the other one.</para>
+      <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/comparison.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+      
+      </sect1>
+    
+    
 </chapter>
       
       

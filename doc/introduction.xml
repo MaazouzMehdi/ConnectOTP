@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <chapter id ="introduction">
 	<title>Introduction</title>
 	
-	<para>This workshop aims to show you how to connect OpenTripPlanner and MobilityDB and to display the generated trips on Qgis. The generated trips are multi-modal and focus on means of transport obtained via GTFS data.</para>
+	<para>This workshop aims to show you how to connect <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> and to display the generated trips on Qgis. The generated trips are multi-modal and focus on means of transport obtained via GTFS data.</para>
 	
 	<para>In this document you will find the tools used for the realization of this workshop as well as the different steps for the creation and visualization of the trips.</para>
 
