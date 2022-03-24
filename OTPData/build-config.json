@@ -1,7 +1,0 @@
-{
-  "storage": {
-      "localFileNamePatterns": {
-      "gtfs" : "stib-gtfs.zip|tec-gtfs.zip" }
-  }
-}
-

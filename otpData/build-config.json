@@ -1,0 +1,7 @@
+{
+  "storage": {
+      "localFileNamePatterns": {
+      "gtfs" : "stib-gtfs.zip" }
+  }
+}
+

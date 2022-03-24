@@ -1,0 +1,121 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id ="generating_mobilityDB_trips">
+  	<title>Generate MobilityDB trips</title>
+  	
+  	<para>Once the various tools have been installed and configured. We can start generating MobilityDB trips from trips obtained via OpenTripPlanner. To do this, we will randomly generate source and target nodes that will be used in the calculation of the trips.</para>
+  	
+  	 <programlisting xml:space="preserve">
+  	 $ psql -h localhost -U postgres -d brusselsOTP  -f ./src/combination.sql -v o=10
+	    -- -v o=10 means we want to generate 10 source nodes and 10 target nodes
+	    </programlisting>
+	    
+	    <para>We will now contact the OpenTripPlanner API to generate trips, and convert them to be compatible with a PostgreSQL database.
+                    Please make sure you have started the OTP server before doing this.</para>
+                    
+      <programlisting xml:space="preserve">
+      -- in a console at the root of your project :
+      $ python ./src/manageOTP.py localhost brusselsOTP dbowner password 
+
+      -- as usual, replace dbowner by your database user
+      -- replace password by your database user's password
+      </programlisting>
+      
+      <para>Running this command will prompt you to enter parameters to better define the trips you want to create.
+                      Below are some examples of parameters you might want to enter. OpenTripPlanner is full of parameters, a full list can be found at this <ulink url="http://dev.opentripplanner.org/apidoc/1.0.0/resource_PlannerResource.html">address</ulink></para>
+        
+      <para> the desired format is presented as follows : key=value.
+                      Here is an example you could enter in the console when you run OTPManage.py</para>
+      
+      <programlisting xml:space="preserve">
+      please enter the desired parameters ( key=value ) :  arriveBy=true optimize=QUICK
+      </programlisting>
+      
+      <para>You could found below some parameters you put enter :</para>
+      <itemizedlist>
+            <listitem><para>date=2022-03-10</para></listitem>
+            <listitem><para>time=13:23</para></listitem>
+            <listitem><para>mode=WALK,BIKE (represents transport modes to consider)</para></listitem>
+            <listitem><para>wheelchair=true</para></listitem>
+            <listitem><para>arriveBy=true (specifies that the given time is when we plan to arrive)</para></listitem>
+            <listitem><para>maxWalkDistance=1000 (specifies the maximum distance in meters that you are willing to walk)</para></listitem>
+      </itemizedlist>
+      
+      <para>If you wish, you can press "Enter" directly. In this way, the default values will be taken into account.
+                      Note that the default date represents the current day, the default time represents the current time.</para>
+
+      <para>Please note that the baseline GTFS data covers the months of March 2022. If you are doing this Workshop later, please enter a specific date that is taken into account by the GTFS data</para>
+      
+      <para>For the sake of this WorkShop, we have changed the default value of the mode parameter. Originally WALK, it is now WALK,TRANSIT.
+                      The reason being that this Workshop deals with multi-modal routing, so there is no point in using only your feet to do the trips. Moreover, we changed the default value numItineraries=1 by numItineraries=2 mainly because the default value only takes account the WALK trip.</para>
+      
+      <para>Now we just need to run one last sql script to generate the mobility trips.</para>
+      <programlisting xml:space="preserve">
+      -- in a console at the root of your project
+      $ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.sql
+      -- We generate MobilityDB trips
+       </programlisting>
+       
+       <para>We now have the mobilitytrips table containing our tgeompoints.
+        As well as a table stibtrip containing our tgeompoints which represents a trip by public transport, a table waittrip which represents people waiting for their transfer and a table walktrip which represents people walking.</para>
+
+      <para>Now let's go to Qgis and open a connection to our BrusselsOTP Database. Once done, click on the optstart and opttarget tables to display the source nodes and taget nodes. The generated nodes are random, so there is a good chance that you will have other nodes</para>
+      
+      <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/01.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+			  
+			<para>We can display our mobilitytrips table on QGis. However, in order to be able to visualize our points (people) moving in time, we will use the Move module.</para>
+			
+      <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/05.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+      
+      <para>In order to visualize the points in a temporal way, we just need to use the Move plugin (installed previously). Click on the plugin to display a window at the bottom where you insert the 
+                      following query and then, click on execute. This will create a temporal layer. Open the controller panel (View->Panels->Temporal Controller Panel) and you can then see the moving points move over time.</para>
+      
+      <programlisting xml:space="preserve">
+        -- on the plugin Move in Qgis
+        select trip from mobilitytrips
+      </programlisting>
+      
+      <para>Please note that in Belgium we are in UTC+1. I'm currently having trouble displaying the correct time on Move.
+                      Therefore, if you generate trips between 04:00 pm and 04:30 pm for example, the display of the points on Move will be between 03:00 pm and 03h30 pm.</para>
+      
+      <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/06.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+      
+      <para>If you want a more advanced display to better differentiate between trips by foot and by public transport.
+                    Simply insert these 3 queries in the Move window in Qgis :</para>
+      
+      <programlisting xml:space="preserve">
+      select trip as walktrip from walktrip
+      select trip as waittrip from waittrip
+      select trip as stibtrip from stibtrip
+      </programlisting>
+      
+      <para>Here is one result you might get :</para>
+      
+      <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/10.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para>
+</chapter>
+      
+      

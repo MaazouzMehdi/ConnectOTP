@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+
+<chapter id ="prepare_qGis">
+  	<title>Prepare QGIS</title>
+  	
+  	  <para>To display the trips, the Qgis tool is used. Instructions for downloading and installing it can be found : <urlink url="https://www.qgis.org/fr/site/forusers/download.html">here</urlink></para>
+  	  <para>When connecting Qgis with your database, please enable basic authentication. Otherwise, there is a risk that the Move module do not work properly</para>
+  	  
+        <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/07.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+			  </para>
+    
+  </chapter>

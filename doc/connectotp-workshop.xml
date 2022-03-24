@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+
+<!ENTITY introduction SYSTEM "introduction.xml">
+<!ENTITY environment SYSTEM "environment.xml">
+<!ENTITY installation SYSTEM "installation.xml">
+<!ENTITY prepare_database SYSTEM "prepare_database.xml">
+<!ENTITY prepare_openTripPlanner_server SYSTEM "prepare_openTripPlanner_server.xml">
+<!ENTITY prepare_qGIS SYSTEM "prepare_qGIS.xml">
+<!ENTITY generating_mobilityDB_trips SYSTEM "generating_mobilityDB_trips.xml">
+
+]>
+<book lang="en">
+	<bookinfo>
+		<title>ConnectOTP : Workshop</title>
+		<author>
+			<firstname>Mehdi</firstname>
+			<surname>Maazouz</surname>
+			<affiliation>
+				<orgname>Université libre de Bruxelles, Belgium</orgname>
+			</affiliation>
+		</author>
+
+		<pubdate><?dbtimestamp format="Y-m-d"?>.</pubdate>
+		<abstract>
+			<para>
+				This project aims to generate trajectories using <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and apply <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> on them.
+				This project is open source and its code is available on <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">Github</ulink>
+
+			</para>
+
+			<para>
+				ConnectOTP is developed by the student Maazouz Mehdi in the framework of his thesis in computer science in the Université Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zimányi.
+			</para>
+
+
+			<para>
+				This is the workshop for ConnectOTP. Feel free to use this material any way you like.
+			</para>
+
+		</abstract>
+	</bookinfo>
+
+	&introduction;
+	&environment;
+	&installation;
+	&prepare_database;
+	&prepare_openTripPlanner_server;
+	&prepare_qGIS;
+	&generating_mobilityDB_trips;
+	<index />
+
+</book>

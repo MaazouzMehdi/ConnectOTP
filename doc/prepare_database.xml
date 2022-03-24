@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id ="prepare_database">
+  	<title>Prepare Database</title>
+  	    <para>For the moment, we will use the OSM map of Brussels. The data was fetched via the OpenStreetMap API (Overpass API) and then reduced into a zip file. The result can be found in the root of the project in the file{./brussels.zi}. Please extract this file in order to get ./brussels.om}. Then, open a console</para>
+  	    <programlisting xml:space="preserve">
+          $ createdb -h localhost -p 5432 -U dbowner brusselsOTP
+          -- replace localhost with your database host, 5432 with your port,
+          -- and dbowner with your database use
+	                
+          -- create needed extensions 
+          $ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION hstore'
+          -- adds the hstore extension needed by osm2pgsql
+        
+          $ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION MobilityDB CASCADE'
+          -- adds the PostGIS and the MobilityDB extensions to the database
+	              
+	              
+          $ osm2pgrouting -W 'password' -h localhost -p 5432 -U dbowner -f brussels.osm -d brusselsOTP
+          -- replace password by your dbowner's password
+          -- don't forget to extract brussels.zip
+            
+            </programlisting>
+            
+      <para>the table ways_vertices_pgr brings us more than 116000 nodes located in the Brussels area. It is from these points that we will choose our source nodes and target nodes.</para>
+</chapter>
