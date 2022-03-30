@@ -21,6 +21,8 @@ def getCoordinate(response) :
 	return res
 
 def setParameters(parameters) :
+	''' create paramaters which be inserted into the API call
+		May introduce default paramters if not specified by the user '''
 	if len(parameters) == 0 :
 		tempo_parameters = []
 	else :	
@@ -122,15 +124,14 @@ for source, target in match_item :
 	
 	route_from_lat = route_data['plan']['from']['lat']
 	route_from_lon = route_data['plan']['from']['lon']
-	#route_from_stopid = route_data['plan']['from']['stopId']
-	#route_from_stopcode = route_data['plan']['from']['stopCode']
 	
 	try :
 		route_from_name = route_data['plan']['from']['name']
 	except :
-		cur.execute('DELETE from optstart where id='+str(source)+';')
-		cur.execute('DELETE from opttarget where id='+str(target)+';')
-		continue
+		route_from_name = None # not available
+		#cur.execute('DELETE from optstart where id='+str(source)+';')
+		#cur.execute('DELETE from opttarget where id='+str(target)+';')
+		#continue
 	
 	try :
 		route_errormessage = route_data['error']['message']
@@ -142,9 +143,6 @@ for source, target in match_item :
 		pass
 	route_to_lat = route_data['plan']['to']['lat']
 	route_to_lon = route_data['plan']['to']['lon']
-	#route_to_stopid = route_data['plan']['to']['stopId']
-	#route_to_stopcode = route_data['plan']['to']['stopCode']
-	#route_to_name = route_data['plan']['to']['name']
 	for iter in route_data['plan']['itineraries']:
 		route_routeid += 1
 		route_from_starttime = iter['startTime']
@@ -156,7 +154,8 @@ for source, target in match_item :
 		route_total_walkdistance = iter['walkDistance']
 		route_total_transfers = iter['transfers']
 		route_leg_totaldistcounter = 0
-		#route_legid = 0 #TODO verifier si c'est bien ici
+		
+		
 		for leg in iter['legs']:
 			route_legid += 1
 			route_leg_starttime = leg['startTime']

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 
 <chapter id ="installation">
-  	<title>Getting project</title>
+  	<title>Setting up the project</title>
         <sect1 id="github">
-            <title>Github</title>
+            <title>Getting the project</title>
                 <para>Please go to the official <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">github</ulink> page of the project and download the various files there, or simply clone the project.
                 Here is the commang to clone the repository</para>
                 
@@ -24,5 +24,101 @@ $ git clone https://github.com/MaazouzMehdi/ConnectOTP.git
                                <listitem><para>build-config.json contains options and parameters that are taken into account during the graph building process</para></listitem>
                           </itemizedlist></para></listitem>
                 </itemizedlist>
+    </sect1>
+    
+    <sect1 id="prepare_database">
+    <title>Prepare Database</title>
+      
+        	    <para>For the moment, we will use the OSM map of Brussels. The data was fetched via the OpenStreetMap API (Overpass API) and then reduced into a zip file.
+        	     The result can be found in the root of the project in the file ./brussels.zip. Please extract this file in order to get ./brussels.osm file. Then, open a console</para>
+  	    <programlisting xml:space="preserve">
+$ createdb -h localhost -p 5432 -U dbowner brusselsOTP
+-- replace localhost with your database host, 5432 with your port,
+-- and dbowner with your database use
+      </programlisting>
+      <para>this command line allows the creation of the brusselsOTP database that we will use throughout this workshop</para>
+      <para>ConnectOTP is a project that depends on  Postgis, MobilityDB as well as Hstore. This is why we need to add these extensions to our database</para>
+      <programlisting xml:space="preserve">
+-- create needed extensions 
+$ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION hstore'
+
+$ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION postgis'
+$ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION MobilityDB '
+-- adds the PostGIS and the MobilityDB extensions to the database
+	    </programlisting>
+	    
+	    <para>The last two lines can be executed in a single line by using the <varname>CASCADE</varname> parameter which install Postgis extension  before installing MobilityDB extension .</para>
+      <programlisting xml:space="preserve">
+$ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION MobilityDB CASCADE'
+      </programlisting>
+      
+      <para>This last command will allow us to create a topology for the city of Brussels by creating two tables, namely <varname>ways</varname> as well as <varname>ways_vertices_pgr</varname></para>
+     <programlisting xml:space="preserve">
+$ osm2pgrouting -W 'password' -h localhost -p 5432 -U dbowner -f brussels.osm -d brusselsOTP
+-- replace password by your dbowner's password
+      </programlisting>
+        
+        <para>the table <varname>ways_vertices_pgr</varname> brings us more than 116000 nodes located in the Brussels area. It is from these points that we 
+        will choose our source nodes and target nodes.</para>
+    </sect1>
+    
+    <sect1 id="prepare_openTripPlanner_server">
+      <title>Prepare OpenTripPlanner server</title>
+      
+        	    <para>In order to contact the OpenTripPlanner API, we will set up a local web server (for now). The .jar file <varname>otp-2.0.0-shaded.jar</varname> is located at the root of the project and corresponds to OpenTripPlanner 2.0 </para>
+  	    
+  	    <para>When it is executed, it will use the files in otpData/  to create the graph. By default, when the graph is created, the transit network will contain the GTFS data of the Tec and the Stib. If you want to add a GTFS file, please put it in the otpData/  folder and add its name in the build-config.json file like this.</para>
+  	    
+  	    <itemizedlist>
+  	        <listitem><para>"gtfs" : "tec-gtfs.zip|stib-gtfs.zip|<varname>my-gtfs.zip</varname>"</para></listitem>
+  	    </itemizedlist>
+  	    
+  	    <para>For example if we remove the GTFS file tec-gtfs.zip in our build-config.json we've got    :</para>
+  	    <itemizedlist>
+  	        <listitem><para>"gtfs" : "stib-gtfs.zip"</para></listitem>
+  	    </itemizedlist>
+  	    
+  	    <para>Please be careful, for OpenTripPlanner 2 to detect a GTFS file, its name must end in .zip and must contain the letters.
+                      Now all we have to do is launch our server.</para>
+                      
+        <programlisting xml:space="preserve">
+-- at the root of the project:
+$ java -Xmx4G -jar otp-2.0.0-shaded.jar   --build --save ./otpData/
+        </programlisting>
+        
+        <para>The parameter <varname>-Xmx4G</varname> means that you reserve 4GB of memory in order to build the graph containing our OSM and GTFS data from Stib and Tec. If you decide to use only OSM and Stib data, the parameter <varname>-Xmx2G</varname> would be sufficient. The parameter<varname>--build</varname> means the graph is build and <varname>--save</varname> means we store the graph onto disk.
+                        To start the server</para>
+        <programlisting xml:space="preserve">
+-- at the root of the project:
+$ java -jar otp-2.0.0-shaded.jar   --load --serve ./otpData/
+        </programlisting>
+
+      <para><varname>--load</varname>  means we load the graph just built before and <varname>--serve</varname> simply means we run  an OTP API server</para>
+    </sect1>
+    
+    <sect1 id="prepare_qGis">
+      <title>Prepare QGIS</title>
+        	  <para>To display the trips, the Qgis tool is used. Instructions for downloading and installing it can be found  at this  <ulink url="https://www.qgis.org/fr/site/forusers/download.html">address</ulink></para>
+  	  <para>When connecting Qgis with your database, please enable basic authentication. Otherwise, there is a risk that the Move module do not work properly</para>
+  	  
+        <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/07.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+			  </para>
+			  
+			  <para>After installing Qgis and its Move module, you should be able to access to the below window.
+			                  If you have any problems, please refer to the <ulink url="https://github.com/mschoema/move">Move  </ulink>github page</para>
+
+        <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/move.png' width='500pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+			  </para>
+    
     </sect1>
 </chapter>

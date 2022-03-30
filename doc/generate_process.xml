@@ -1,0 +1,418 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id ="generate_process">
+  	<title>Understanding the generation process </title>
+  	
+  	<para>We now describe the different codes used to generate our different scenarios. We start with the file <varname>combination.sql</varname></para>
+  	
+  	<programlisting xml:space="preserve">
+  	
+DROP FUNCTION IF EXISTS generateCombinations;
+CREATE OR REPLACE FUNCTION generateCombinations(noCombinations int)
+RETURNS void AS $$
+DECLARE
+	noVertices int;
+	startVertice int;
+	targetVertice int;
+	allstartVertices int[];
+	alltargetVertices int[];
+	
+BEGIN
+	DROP TABLE IF EXISTS optstart;
+	DROP TABLE IF EXISTS opttarget;
+	CREATE TABLE optstart (id int,cnt int,chk int,ein int,eout int,the_geom geometry);
+	CREATE TABLE opttarget (id int,cnt int,chk int,ein int,eout int,the_geom geometry);
+
+	select count(*) from ways_vertices_pgr into noVertices;
+	FOR i in 1..noCombinations LOOP
+		 select ceiling(random()*noVertices) into startVertice;
+		 INSERT INTO optstart ( select id,cnt,chk,ein,eout,the_geom from ways_vertices_pgr where id = startVertice );
+
+		 select ceiling(random()*noVertices) into targetVertice;
+		 INSERT INTO opttarget ( select id,cnt,chk,ein,eout,the_geom from ways_vertices_pgr where id = targetVertice );
+		
+		 UPDATE opttarget set ein = startVertice where id = targetVertice;
+	END LOOP;
+	RETURN;
+END;
+$$ LANGUAGE plpgsql STRICT;
+
+Select generateCombinations(:o);
+</programlisting>
+
+    <para>In this file we loop over the number of trips we want to generate  .</para>
+    <para> We chose the source nodes and target nodes with a uniform distribution among all nodes in the table <varname>ways_vertices_pgr</varname>.
+                 We modify the <varname>ein</varname> column of the <varname>opttarget</varname> table to match each target node with its source node.</para>
+
+
+    <para>The <varname>manageOTP.py</varname>file will contact the OpenTripPlanner API and parse the result into an sql table that we can then process</para>
+
+<programlisting xml:space="preserve">
+
+conn = psycopg2.connect("host="+str(sys.argv[1])+" dbname="+str(sys.argv[2])+" user="+str(sys.argv[3])+" password="+sys.argv[4])
+cur = conn.cursor()
+
+match_item = matchNodes()
+sql = "DROP TABLE IF EXISTS ROUTES;"
+cur.execute(sql)
+sql = "CREATE TABLE ROUTES (route_legid int,route_routeid int,route_from_starttime timestamp, route_leg_starttime timestamp, route_leg_distance double precision, route_leg_endtime timestamp, route_leg_from_lat double precision, route_leg_from_lon double precision, source_id bigint, target_id bigint,route_leg_mode text, geom geometry);"
+cur.execute(sql)
+
+route_routeid = 0
+route_legid = 0
+parameters = input("please enter the desired parameters ( key=value ) : ")
+d_parameters = setParameters(parameters)
+   
+
+for source, target in match_item :
+	source_id = source
+	cur.execute('SELECT st_astext(the_geom) from optstart where id='+str(source)+';')
+	response = cur.fetchall()
+	coordinate_start = getCoordinate(response)
+	
+	target_id = target
+	cur.execute('SELECT st_astext(the_geom) from opttarget where id='+str(target)+';')
+	response = cur.fetchall()
+	coordinate_target = getCoordinate(response)
+	
+	coordinate_start=coordinate_start[0].split(' ')
+	coordinate_target=coordinate_target[0].split(' ')
+	route_url = 'http://localhost:8080/otp/routers/default/plan?fromPlace='+coordinate_start[1]+','+coordinate_start[0]+'&amp;toPlace='+coordinate_target[1]+','+coordinate_target[0]
+	for key in d_parameters :
+		route_url = route_url +'&amp;'+key+'='+d_parameters[key]
+	
+	route_headers = {"accept":"application/json"}
+	route_request = urllib.request.Request(route_url, headers=route_headers)
+	route_response = urllib.request.urlopen(route_request)
+	response_data = route_response.read()
+	encoding = route_response.info().get_content_charset('utf-8')
+	route_data = json.loads(response_data.decode(encoding))
+	
+	route_from_lat = route_data['plan']['from']['lat']
+	route_from_lon = route_data['plan']['from']['lon']
+	
+	try :
+		route_from_name = route_data['plan']['from']['name']
+	except :
+		route_from_name = None # not available
+		
+	try :
+		route_errormessage = route_data['error']['message']
+		if route_errormessage == 'LOCATION_NOT_ACCESSIBLE' :
+			cur.execute('DELETE from optstart where id='+str(source)+';')
+			cur.execute('DELETE from opttarget where id='+str(target)+';')
+			continue
+	except :
+		pass
+	route_to_lat = route_data['plan']['to']['lat']
+	route_to_lon = route_data['plan']['to']['lon']
+	for iter in route_data['plan']['itineraries']:
+		route_routeid += 1
+		route_from_starttime = iter['startTime']
+		route_to_endtime = iter['endTime']
+		route_total_duration = iter['duration']
+		route_total_transittime = iter['transitTime']
+		route_total_waitingtime = iter['waitingTime']
+		route_total_walktime = iter['walkTime']
+		route_total_walkdistance = iter['walkDistance']
+		route_total_transfers = iter['transfers']
+		route_leg_totaldistcounter = 0
+		
+		
+		for leg in iter['legs']:
+			route_legid += 1
+			route_leg_starttime = leg['startTime']
+			route_leg_departuredelay = leg['departureDelay']
+			route_leg_endtime = leg['endTime']
+			route_leg_arrivaldelay = leg['arrivalDelay']
+			route_leg_duration = leg['duration']
+			route_leg_distance = leg['distance']
+			route_leg_mode = leg['mode']
+			route_leg_from_lat = leg['from']['lat']
+			route_leg_from_lon = leg['from']['lon']
+			route_leg_from_name = leg['from']['name']
+			route_leg_from_departure = leg['from']['departure']
+			route_leg_to_lat = leg['to']['lat']
+			route_leg_to_lon = leg['to']['lon']
+			route_leg_to_name = leg['to']['name']
+			route_leg_to_arrival = leg['to']['arrival']
+			route_leg_encodedpolylinestring = leg['legGeometry']['points']
+			route_leg_decodedpolylinestring_aspointlist = decode_polyline(route_leg_encodedpolylinestring)
+			
+			sql1 = "ST_Setsrid(ST_Makeline(ARRAY["
+			for coordinate in route_leg_decodedpolylinestring_aspointlist :
+				sql1 = sql1 + "ST_Point("+str(coordinate[0])+","+str(coordinate[1])+"),"
+			sql1 = sql1[:-1]
+			sql1 = sql1 +']),4326)'
+			
+			
+			sql = "INSERT INTO ROUTES VALUES("+str(route_legid)+","+str(route_routeid)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_from_starttime/1000))+"',TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_starttime/1000))+"',"+str(route_leg_distance)+",TIMESTAMP '"+str(datetime.datetime.fromtimestamp(route_leg_endtime/1000))+"',"+str(route_leg_from_lat)+","+str(route_leg_from_lon)+","+str(source_id)+","+str(target_id)+", '"+route_leg_mode+"',"+str(sql1)+");"
+			cur.execute(sql)
+
+conn.commit()
+conn.close()
+</programlisting>
+
+<para>We start by creating a <varname>routes</varname> table which will contain all our trips. Then, for each route, we will call the OpenTripPlanner API which will answer us in json format.
+              Then we parse the result. Before creating the sql query that we will insert in our <varname>routes</varname> table, we call a function  <varname>decode_polyline</varname></para>
+
+    <programlisting xml:space="preserve">
+# Source: https://stackoverflow.com/a/33557535/8947209 (slightly modified)
+def decode_polyline(polyline_str):
+	index, lat, lng = 0, 0, 0
+	#coordinates = []
+	pointlist = []
+	changes = {'latitude': 0, 'longitude': 0}
+	    
+	# Coordinates have variable length when encoded, so just keep
+	# track of whether we've hit the end of the string. In each
+	# while loop iteration, a single coordinate is decoded.
+	while index &lt; len(polyline_str):
+		# Gather lat/lon changes, store them in a dictionary to apply them later
+		for unit in ['latitude', 'longitude']: 
+			shift, result = 0, 0
+			while True:
+				byte = ord(polyline_str[index]) - 63
+				index+=1
+				result |= (byte &amp; 0x1f) &lt;  &lt; shift
+				shift += 5
+				if not byte >= 0x20:
+					break
+					
+			if (result &amp; 1):
+				changes[unit] = ~(result >> 1)
+			else:
+				changes[unit] = (result >> 1)
+
+		lat += changes['latitude']
+		lng += changes['longitude']
+		
+		qgspointgeom = (float(lng / 100000.0),float(lat / 100000.0))
+		pointlist.append(qgspointgeom)
+	return pointlist
+	</programlisting>
+	
+	<para>The <varname>setParameters</varname> function encodes the various parameters that will be used when calling the API. 
+Some parameters have a default value if not specified by the user</para>
+
+ <programlisting xml:space="preserve">
+def setParameters(parameters) :
+	''' create paramaters which be inserted into the API call
+		May introduce default paramters if not specified by the user '''
+	if len(parameters) == 0 :
+		tempo_parameters = []
+	else :	
+		tempo_parameters = parameters.split(' ')
+	res = {}
+	for i in range (0,len(tempo_parameters)) :
+		res[tempo_parameters[i].split('=')[0]]=tempo_parameters[i].split('=')[1]
+	if 'date' not in res :
+		res['date']= str(datetime.date.today())
+	if 'time' not in res :
+		now = datetime.datetime.now()
+		res['time'] = now.strftime("%H:%M:%S")
+	if 'mode' not in res:
+		res['mode']='WALK,TRANSIT'
+	if 'numItineraries' not in res :
+		res['numItineraries'] = '2'
+	return res
+</programlisting>
+
+<para>In order to generate our Mobility trips, we run the <varname>generateMobility_trips.sql</varname></para>
+
+ <programlisting xml:space="preserve">
+ DROP TYPE IF EXISTS step CASCADE;
+CREATE TYPE step as (geom geometry,route_leg_from_lat double precision, route_leg_from_lon double precision,
+route_leg_starttime timestamp,route_leg_endtime timestamp,route_leg_distance float,route_leg_mode text);
+</programlisting>
+
+<para>We create a type step which corresponds to a trip's edge.</para>
+<para>Specifically it contains the geometry, the coordinate,  the time of when the user uses this edge  and the time of when he leaves the edge, 
+the distance of this segment and the mode that corresponds to the modality.</para>
+
+<programlisting xml:space="preserve">
+DROP FUNCTION IF EXISTS createTrips;
+CREATE OR REPLACE FUNCTION createTrips(itineraries bool)
+RETURNS void AS $$
+DECLARE
+	trip tgeompoint;
+	notrips int;
+	id int;
+	d date;
+	tmode text;
+	actual_source int;
+	next_source int;
+	maxleg int;
+	nolegs int;
+	baseleg int;
+	nodeSource bigint;
+	nodeTarget bigint;
+	leg_starttime timestamptz;
+	leg_endtime timestamptz;
+	leg_geom geometry;
+	changed_itinerary bool;
+	path step[];
+BEGIN
+	id = 1;
+	DROP TABLE IF EXISTS MobilityTrips CASCADE;
+	CREATE TABLE MobilityTrips(id int, routeid int, day date, source bigint,
+		target bigint, transport_mode text, trip tgeompoint, trajectory geometry,
+		PRIMARY KEY (id));
+	
+	select max(route_routeid) from routes into notrips;
+	select max(route_legid) from routes into maxleg;
+	
+	For actualtrip in 1..notrips LOOP
+		
+		
+		IF itineraries != true THEN
+			-- Verification in order to delete first itinary composed only of walk 
+			select source_id from routes into actual_source where actualtrip=route_routeid;
+			IF actualtrip != notrips THEN
+				select source_id from routes into next_source where actualtrip+1=route_routeid;
+				continue when actual_source=next_source;
+			END IF;
+		END IF;
+			
+		select min(route_legid) from routes into baseleg where route_routeid=actualtrip;
+		changed_itinerary = true;
+		select count(route_routeid) from routes where route_routeid=actualtrip into nolegs;
+		
+		For j in 0..nolegs-1 LOOP
+			IF baseleg+j != 1 and baseleg+j != maxleg and changed_itinerary != true THEN
+				select route_leg_starttime from routes into leg_starttime where baseleg+j = route_legid;
+				select route_leg_endtime from routes into leg_endtime where baseleg+j-1 = route_legid;
+				select geom from routes into leg_geom where baseleg+j-1 = route_legid;
+				
+				select source_id from routes into nodeSource where baseleg+j = route_legid;
+				select target_id from routes into nodeTarget where baseleg+j = route_legid;
+				
+				-- We check if the user has to wait for a transfer
+				If leg_starttime != leg_endtime THEN
+					trip = wait(leg_endtime,leg_starttime,leg_geom);
+					INSERT INTO MobilityTrips VALUES (id, actualtrip, d, nodeSource, nodeTarget, 'WAIT', trip, trajectory(trip));
+					id = id+1;
+				END IF;
+			END IF;
+			
+			changed_itinerary = false;
+			SELECT array_agg((geom,route_leg_from_lat,    
+				route_leg_from_lon,route_leg_starttime,route_leg_endtime,route_leg_distance,route_leg_mode)::step) 
+				INTO path FROM routes where baseleg+j = route_legid;
+		
+			select route_from_starttime from routes into d where baseleg+j = route_legid;
+			select source_id from routes into nodeSource where baseleg+j = route_legid;
+			select target_id from routes into nodeTarget where baseleg+j = route_legid;
+			select route_leg_mode from routes into tmode where baseleg+j = route_legid;
+			
+			trip = generatetrip(path);
+			INSERT INTO MobilityTrips VALUES (id, actualtrip,d, nodeSource, nodeTarget, tmode, trip, trajectory(trip));
+			id = id+1;
+		END LOOP;
+	END LOOP;
+	RETURN;
+END;
+$$ LANGUAGE plpgsql STRICT;
+</programlisting>
+
+<para>Then the procedure <varname>createTrips</varname> is called for creating Mobility trips.
+We loop over the number of trips we have generated.
+Firstly, if the parameter <varname>itineraries</varname> equals false we do not take into account each route composed exclusively of walking
+ if and only if there is a multi-modal alternative.</para>
+ 
+ <para>Then we loop over the total number of itineraries we have. We check if the user has to wait for a transfer and call the procedure <varname>wait</varname> if so.
+ Otherwise we call the procedure <varname>generatetrip</varname> for creating our Mobility trips.</para>
+ 
+ <programlisting xml:space="preserve">
+ DROP FUNCTION IF EXISTS wait;
+CREATE OR REPLACE FUNCTION wait(starttime timestamptz, endtime timestamptz, trip geometry)
+RETURNS tgeompoint AS $$
+DECLARE
+	p1 geometry;
+	curtime timestamptz;
+	instants tgeompoint[];
+	l int;
+BEGIN
+	
+	p1 = ST_PointN(trip, -1);
+	curtime = starttime;
+	endtime = endtime - 1000 * interval '1 ms';
+	l=1;
+	WHILE (curtime &lt; endtime) LOOP
+		curtime = curtime + 100 * interval '1 ms';
+		instants[l] = tgeompoint_inst(p1, curtime);
+		l = l + 1;
+	END LOOP;
+
+	RETURN tgeompoint_seq(instants, true, true, true);
+END;
+$$ LANGUAGE plpgsql STRICT;
+  </programlisting>
+  
+  <para>The procedure recieves as argument the timestamp at which the user has to start waiting, the timestamp at which the user ends waiting and the trip.
+  The output is a sequence of temporal geometry points staying at the same coordinate, waiting for a transfer</para>
+  
+  <programlisting xml:space="preserve">
+CREATE OR REPLACE FUNCTION generateTrip(trip step[])
+RETURNS tgeompoint AS $$
+DECLARE
+	srid int;
+	instants tgeompoint[];
+	curtime timestamptz;
+	departureTime timestamptz;
+	linestring geometry;
+	latitude_from double precision;
+	longitude_from double precision;
+	p1 geometry;
+	p2 geometry;
+	points geometry [];
+	noEdges int;
+	noSegs int;
+	speed float; x1 float; x2 float;y1 float; y2 float;
+	curDist double precision;traveltime double precision;
+	l int;
+	notrips int;
+BEGIN
+	
+	p1 = ST_PointN((trip[1]).geom, 1);
+	curtime = (trip[1]).route_leg_starttime;
+	instants[1] = tgeompoint_inst(p1, curtime);
+	l=2;
+	noEdges = array_length(trip, 1);
+	FOR i IN 1..noEdges LOOP
+		linestring = (trip[i]).geom;
+		SELECT array_agg(geom ORDER BY path) INTO points FROM ST_DumpPoints(linestring);
+		
+		noSegs = array_length(points, 1) - 1;
+		speed = (trip[i]).route_leg_distance / EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime);
+		
+		FOR j IN 1..noSegs LOOP
+			p2 = ST_setSRID(points[j + 1],4326);
+			x2 = ST_X(p2);
+			y2 = ST_Y(p2);
+			
+			curDist = ST_Distance(p1::geography,p2::geography);
+			IF curDist = 0 THEN
+				curDist = 0.1;
+			END IF;
+				
+			travelTime = (curDist / speed);
+			curtime = curtime + travelTime * interval '1 second';
+			
+			p1 = p2;
+			x1 = x2;
+			y1 = y2;
+				
+			instants[l] = tgeompoint_inst(p1, curtime);
+			l = l + 1;
+		END LOOP;
+	END LOOP;	
+	RETURN tgeompoint_seq(instants, true, true, true);
+END;
+$$ LANGUAGE plpgsql STRICT;  
+  </programlisting>
+  
+  <para>The procedure recieves as arugment an array of step. The procedure loops for each edge and determines the number of segments
+  of the edge. A segment is composed of a line and two points at its extremities. Then for each segment we compute the speed, the distance and the time needed to reach 
+  the extremitie of the segment. The output is a sequence of temporal points following the trip.</para>
+</chapter>

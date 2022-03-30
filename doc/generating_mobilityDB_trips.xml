@@ -64,7 +64,7 @@ please enter the desired parameters ( key=value ) :
       <para>Now we just need to run one last sql script to generate the mobility trip.</para>
       <programlisting xml:space="preserve">
 -- in a console at the root of your project
-$ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.sql
+$ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.sql -v itineraries=false
 -- We generate MobilityDB trips
        </programlisting>
        
@@ -126,7 +126,7 @@ $ python ./src/manageOTP.py localhost brusselsOTP dbowner password
 
 please enter the desired parameters ( key=value ) : ( Click on Enter )
 
-$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql
+$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql -v itineraries=false
 	    </programlisting>
 
       <para>Inside Move module in Qgis</para>
@@ -161,10 +161,11 @@ $ python ./src/manageOTP.py localhost brusselsOTP dbowner password
 
 please enter the desired parameters ( key=value ) : ( Click on Enter )
 
-$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql
+$ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sql -v itineraries=true
 	    </programlisting>
       
-      <para>But if you want, you could generate several itineraries for one trip by giving the value you want to the parameter <varname>numItineraries</varname> and generate several trips </para>
+      <para> As we said before, the variable <varname>numItineraries</varname> is already set to 2, so you don't have to change this value. However, in order to display those alternatives itineraries, you have to set <varname>itineraries=true</varname> the command parameter <varname>-v</varname> when you run <varname>generateMobility_Trips.sql</varname></para>
+      <para>Obviously, you could generate smore than 2 itineraries for one trip by giving the value you want to the parameter <varname>numItineraries</varname> </para>
       
             <para> Below you see the red line representing a multi-modal trip ( the red dot representing a person taking a public transport ) while the green line represents the trip by foot.
             Then, you see that the multi-modal trip is faster than the other one.</para>

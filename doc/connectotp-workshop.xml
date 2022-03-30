@@ -5,12 +5,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 
 <!ENTITY introduction SYSTEM "introduction.xml">
-<!ENTITY environment SYSTEM "environment.xml">
 <!ENTITY installation SYSTEM "installation.xml">
-<!ENTITY prepare_database SYSTEM "prepare_database.xml">
-<!ENTITY prepare_openTripPlanner_server SYSTEM "prepare_openTripPlanner_server.xml">
-<!ENTITY prepare_qGIS SYSTEM "prepare_qGIS.xml">
 <!ENTITY generating_mobilityDB_trips SYSTEM "generating_mobilityDB_trips.xml">
+<!ENTITY generate_process SYSTEM "generate_process.xml">
 
 ]>
 <book lang="en">
@@ -45,12 +42,9 @@
 	</bookinfo>
 
 	&introduction;
-	&environment;
 	&installation;
-	&prepare_database;
-	&prepare_openTripPlanner_server;
-	&prepare_qGIS;
 	&generating_mobilityDB_trips;
+	&generate_process;
 	<index />
 
 </book>

@@ -6,5 +6,22 @@
 	<para>This workshop aims to show you how to connect <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> and to display the generated trips on Qgis. The generated trips are multi-modal and focus on means of transport obtained via GTFS data.</para>
 	
 	<para>In this document you will find the tools used for the realization of this workshop as well as the different steps for the creation and visualization of the trips.</para>
+	
+	<sect1 id="environment">
+      <title>Environment</title>
+            <para>This workshop was run on a Ubuntu 18.04 LTS Linux machine, 8GB Ram, Intel Core I5-5300U CPU and 512GB SSD. In addition, the following tools made this workshop possible</para>
+  	  
+  	  
+  	  <itemizedlist>
+			<listitem><para>Java 11 (OpenTripPlanner 2 requires Java 11 or later)</para></listitem>
+			<listitem><para>PostgreSQL 13.6</para></listitem>
+			<listitem><para>Postgis 2.5.5</para></listitem>
+			<listitem><para>MobilityDB 1.0</para></listitem>
+			<listitem><para>Python 3.7<itemizedlist><listitem><para> module psycopg2 (installed via PyPi)</para></listitem>
+      </itemizedlist></para></listitem>
+			<listitem><para>QGis 3.22 Białowieża and its module <itemizedlist>
+			  	  <listitem><para>Move ( please follow instructions on <ulink url="https://github.com/mschoema/move">github )</ulink></para></listitem></itemizedlist></para></listitem>
+		</itemizedlist>
+    </sect1>
 
 </chapter>

@@ -1,61 +1,7 @@
 
 DROP TYPE IF EXISTS step CASCADE;
 CREATE TYPE step as (geom geometry,route_leg_from_lat double precision, route_leg_from_lon double precision,route_leg_starttime timestamp,route_leg_endtime timestamp,route_leg_distance float,route_leg_mode text);
-/*
 
-DROP FUNCTION IF EXISTS linkedStib_street;
-CREATE OR REPLACE FUNCTION linkedStib_street()
-RETURNS void AS $$
-DECLARE 
-	allid int;
-BEGIN
-	drop table if exists gtfs.testligne;
-	create table gtfs.testligne (source bigint, target bigint, cost double precision, reverse_cost double precision, geom geometry);
-	allid = 6750; 
-	FOR i IN 1..allid LOOP
-		INSERT INTO gtfs.testligne (source,target,cost,reverse_cost,geom) select s.id,t.id,1,1, ST_Makeline(s.the_geom,t.the_geom) from streetnetwork_vertices_pgr s, gtfs.tnode t where t.id=i + 96376 ORDER BY ST_Distance(s.the_geom,t.the_geom) ASC LIMIT 1;
-	END LOOP;
-	RETURN;
-END;
-$$ LANGUAGE plpgsql STRICT;
-
---SELECT linkedStib_street();
- 
-	
-DROP FUNCTION IF EXISTS createPath;
-CREATE OR REPLACE FUNCTION createPath(source bigint, target bigint)
-RETURNS step[] AS $$
-DECLARE
-	-- Query sent to pgrouting depending on the argument pathMode
-	query_pgr text;
-	-- Result of the function
-	result step[];
-BEGIN
-	query_pgr = 'SELECT id, source, target, cost, reverse_cost FROM tentative';
-	WITH Temp1 AS (
-		SELECT P.seq, P.node, P.edge
-		FROM pgr_dijkstra(query_pgr, source, target, true) P
-	),
-	Temp2 AS (
-		SELECT T.seq,
-			-- adjusting directionality
-			-- Car dijkstra s applique sur graphe non diriger
-			CASE
-				WHEN T.node = E.source THEN E.the_geom
-				ELSE ST_Reverse(the_geom)
-			END AS geom,
-			e.maxspeed AS maxSpeed,e.category as
-			category
-		FROM Temp1 T, tentative E
-		WHERE edge IS NOT NULL AND E.id = T.edge
-	)
-	SELECT array_agg((geom, maxSpeed,category)::step ORDER BY seq) INTO result
-	FROM Temp2;
-	RETURN result;
-END;
-$$ LANGUAGE plpgsql STRICT;
-
-*/
 
 DROP FUNCTION IF EXISTS wait;
 CREATE OR REPLACE FUNCTION wait(starttime timestamptz, endtime timestamptz, trip geometry)
@@ -70,7 +16,6 @@ BEGIN
 	p1 = ST_PointN(trip, -1);
 	curtime = starttime;
 	endtime = endtime - 1000 * interval '1 ms';
-	--instants[1] = tgeompoint_inst(p1, curtime);
 	l=1;
 	WHILE (curtime < endtime) LOOP
 		curtime = curtime + 100 * interval '1 ms';
@@ -78,8 +23,6 @@ BEGIN
 		l = l + 1;
 	END LOOP;
 
-	--instants[l] = tgeompoint_inst(p1, curtime);
-	--l = l + 1;
 	RETURN tgeompoint_seq(instants, true, true, true);
 END;
 $$ LANGUAGE plpgsql STRICT;
@@ -116,11 +59,8 @@ BEGIN
 		SELECT array_agg(geom ORDER BY path) INTO points FROM ST_DumpPoints(linestring);
 		
 		noSegs = array_length(points, 1) - 1;
-		IF EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime) = 0 THEN
-			speed = 0.001;
-		ELSE
-			speed = (trip[i]).route_leg_distance / EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime);
-		END IF;
+		speed = (trip[i]).route_leg_distance / EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime);
+		
 		FOR j IN 1..noSegs LOOP
 			p2 = ST_setSRID(points[j + 1],4326);
 			x2 = ST_X(p2);
@@ -148,7 +88,7 @@ $$ LANGUAGE plpgsql STRICT;
 
 
 DROP FUNCTION IF EXISTS createTrips;
-CREATE OR REPLACE FUNCTION createTrips(comparison text)
+CREATE OR REPLACE FUNCTION createTrips(itineraries bool)
 RETURNS void AS $$
 DECLARE
 	trip tgeompoint;
@@ -168,7 +108,6 @@ DECLARE
 	leg_geom geometry;
 	changed_itinerary bool;
 	path step[];
-	--TODO gerer le by LOOP 2
 BEGIN
 	id = 1;
 	DROP TABLE IF EXISTS MobilityTrips CASCADE;
@@ -180,8 +119,9 @@ BEGIN
 	select max(route_legid) from routes into maxleg;
 	
 	For actualtrip in 1..notrips LOOP
-		Raise Info 'comparison %',comparison;
-		IF comparison !='1' THEN
+		
+		
+		IF itineraries != true THEN
 			-- Verification in order to delete first itinary composed only of walk 
 			select source_id from routes into actual_source where actualtrip=route_routeid;
 			IF actualtrip != notrips THEN
@@ -203,6 +143,7 @@ BEGIN
 				select source_id from routes into nodeSource where baseleg+j = route_legid;
 				select target_id from routes into nodeTarget where baseleg+j = route_legid;
 				
+				-- We check if the user has to wait for a transfer
 				If leg_starttime != leg_endtime THEN
 					trip = wait(leg_endtime,leg_starttime,leg_geom);
 					INSERT INTO MobilityTrips VALUES (id, actualtrip, d, nodeSource, nodeTarget, 'WAIT', trip, trajectory(trip));
@@ -230,7 +171,8 @@ END;
 $$ LANGUAGE plpgsql STRICT;
 
 COMMIT;
-SELECT createTrips(:o);
+
+SELECT createTrips(:itineraries);
 --RAISE INFO 'Advanced display enabled on QGis';
 
 DROP TABLE if EXISTS stibtrip CASCADE;
@@ -241,6 +183,9 @@ create table walktrip as select * from mobilitytrips where transport_mode='WALK'
 
 DROP TABLE if EXISTS waittrip CASCADE;
  create table waittrip as select * from mobilitytrips where transport_mode='WAIT';
+
+
+
 --SELECT openTrip();
 
 --drop table IF EXISTS affichage;
