@@ -22,7 +22,7 @@ TODO remove this
 Please follow this link	https://github.com/MaazouzMehdi/ConnectOTP/tree/main/Workshop
 You will find a WorkShop explaining the different steps
 
-*   [HTML] (https://docs.connectotp.com/ConnectOTP/develop/)
+*   [HTML](https://docs.connectotp.com/ConnectOTP/develop/)
 
 
 Status
