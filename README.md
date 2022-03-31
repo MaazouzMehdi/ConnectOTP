@@ -37,7 +37,7 @@ This project is currently under development. We are planning to release the firs
 
 Issues 
 -----------------------
-Please report any issues you may have.
+Please report any [issues](https://github.com/MaazouzMehdi/ConnectOTP/issues) you may have.
 
 
 Documentation
