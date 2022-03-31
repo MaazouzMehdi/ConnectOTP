@@ -2,7 +2,7 @@
 if [ $1 == '-html' ]
 then
 	cd doc/
-	if (sudo xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o ./index.html /usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl connectotp-workshop.xml)
+	if (xsltproc --stringparam html.stylesheet "docbook.css" --xinclude -o ./index.html /usr/share/xml/docbook/stylesheet/nwalsh/html/chunk.xsl connectotp-workshop.xml)
 	cd ..
 	then
 		echo './doc/index.html generated'
@@ -11,7 +11,7 @@ then
 	fi
 elif [ $1 == '-pdf' ]
 then
-	if ( sudo dblatex -s ./doc/texstyle.sty -T native -t pdf -o ./doc/connect-workshop.pdf ./doc/connectotp-workshop.xml )
+	if (dblatex -s ./doc/texstyle.sty -T native -t pdf -o ./doc/connect-workshop.pdf ./doc/connectotp-workshop.xml )
 	then
 		echo './doc/connect-workshop.pdf generated'
 	else
