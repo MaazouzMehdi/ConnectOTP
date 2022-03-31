@@ -55,11 +55,10 @@ For example, the following command generates the documentation in HTML format.
 bash make_doc.sh -html
 ```
 Note that this file is at the root of the project. Moreover you may need to use `sudo` if `make_doc.sh` causes errors.
-The resulting documentation will be generated in the `doc` directory of the build directory.
+The resulting documentation will be generated in the `doc` directory.
 
-In addition, pregenerated versions of them are available :
+In addition, pregenerated version of PDF format is available :
 
-*   [HTML](https://github.com/MaazouzMehdi/ConnectOTP/tree/main/workshop/html/index.html)
 *   [PDF](https://github.com/MaazouzMehdi/ConnectOTP/tree/main/workshop/pdf/connect-workshop.pdf)
 
 
