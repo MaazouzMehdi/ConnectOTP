@@ -14,6 +14,7 @@ $ git clone https://github.com/MaazouzMehdi/ConnectOTP.git
             <para>This project contains several files, here is a brief overview :</para>
                 
                 <itemizedlist>
+                      <listitem><para>make_doc.sh to generate the documentation.</para></listitem>
                      <listitem><para>doc/ contains the necesseray files to generate this workshop.</para></listitem>
                     <listitem><para>src/ contains the sql and python files that will allow the generation of MobilityTrips.</para></listitem>
 			              <listitem><para>otpData/ contains the files necessary for the WEB OTP server to function properly. These files are :  

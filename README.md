@@ -6,23 +6,28 @@ Requirements
 
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   Java >= 11
-*   PostgreSQL >= 10
+*   PostgreSQL >= 11
 *   PostGIS >= 2.5
 *	Python >= 3.0
 	* As well as a compatible version of pip 
-*   MobilityDB 1.0
+*   MobilityDB 1.0 ( or dev branch )
 *   JSON-C
 *   QGis 3.22 Białowieża and one of its module
 	* Move ( https://github.com/mschoema/move )
 
-Building & Tutorial
+Optional Dependencies
 -----------------------
+Dependencies needed for user's documentation :
 
-TODO remove this
-Please follow this link	https://github.com/MaazouzMehdi/ConnectOTP/tree/main/Workshop
-You will find a WorkShop explaining the different steps
+* The DocBook DTD and XSL files are required for building the documentation. For Ubuntu, they are provided by the packages
+`docbook` and `docbook-xsl`.
+* The XML validator xmllint is required for validating the XML files of the documentation. For Ubuntu, it is provided by the
+package `libxml2`.
+* The XSLT processor xsltproc is required for building the documentation in HTML format. For Ubuntu, it is provided by
+the package `libxslt`.
+* The program dblatex is required for building the documentation in PDF format. For Ubuntu, it is provided by the package
+`dblatex`.
 
-*   [HTML](https://docs.connectotp.com/ConnectOTP/develop/)
 
 
 Status
@@ -40,7 +45,22 @@ Documentation
 
 ### Tutorial
 
-You can generate the tutorial in HTML as well as PDF format. The tutorial is generated in English ( currently working to generate the manual in French as well). For this, it is necessary to specify appropriate options in the cmake command as follows:
+You can generate the tutorial in HTML as well as PDF format. The tutorial is generated in English ( currently working to generate the manual in French as well). For this, you have to run `make_doc.sh` with appropriate options in the cmake command as follows:
+
+*   `-html`: Generate in HTML format
+*   `-pdf`: Generate in PDF format
+
+For example, the following command generates the documentation in HTML format.
+```bash
+bash make_doc.sh -html
+```
+Note that this file is at the root of the project
+The resulting documentation will be generated in the `doc` directory of the build directory.
+
+In addition, pregenerated versions of them are available :
+
+*   [PDF](https://github.com/MaazouzMehdi/ConnectOTP/tree/main/doc/connect-workshop.pdf)
+
 
 Overview
 -----------------------
