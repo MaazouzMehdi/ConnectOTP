@@ -192,6 +192,61 @@ def decode_polyline(polyline_str):
 	return pointlist
 	</programlisting>
 	
+	<para> The routes given by OpenTripPlanner in the form of a polyline. Indeed, OpenTripPlanner uses a loosy compression algorithm that encodes a set of coordinates 
+	into a lighter string.
+The encoding process will convert bits into a series of ASCII characters. To do this, each bit is translated into a numeric value, 
+then summed with 63 to obtain an ASCII character that will be displayed cleanly.
+More specifically, here are the different steps required to encode a value into a polyline with an exemple.
+</para>
+
+<itemizedlist>
+<listitem><para>We have got a initial signed value<itemizedlist>
+    <listitem><para><emphasis role="strong">-179.9832104</emphasis></para></listitem></itemizedlist></para></listitem>
+    
+   <listitem><para>Take this value, multiply it by 1e5 and round the result<itemizedlist> 
+   <listitem><para><emphasis role="strong">-17998321</emphasis></para></listitem></itemizedlist></para></listitem>
+   
+   <listitem><para>Convert the value to binary (note that we use two's complement technique)<itemizedlist> 
+   <listitem><para><emphasis role="strong">.... .... ....  11111110 11101101 01011110 00001111</emphasis></para></listitem></itemizedlist></para></listitem>
+   
+    <listitem><para>We take each 32-bit and make a left-shift of one bit<itemizedlist> 
+    <listitem><para><emphasis role="strong">11111101 11011010 10111100 00011110</emphasis></para></listitem></itemizedlist></para></listitem>
+  
+    <listitem><para>If the original decimal value is negative, invert this encoding<itemizedlist> 
+    <listitem><para><emphasis role="strong">00000010 00100101 01000011 11100001</emphasis></para></listitem></itemizedlist></para></listitem>
+  
+    <listitem><para>We break the value out into 5-bit chunks (starting from the right hand side)<itemizedlist> 
+    <listitem><para><emphasis role="strong">00001 00010 01010 10000 11111 00001</emphasis></para></listitem></itemizedlist></para></listitem>
+  
+    <listitem><para>Place the 5-bit chunks into reverse order<itemizedlist> 
+     <listitem><para><emphasis role="strong">00001 11111 10000 01010 00010 00001</emphasis></para></listitem></itemizedlist></para></listitem>
+     
+     <listitem><para>OR each value with 0x20 if another bit chunk follows<itemizedlist> 
+     <listitem><para><emphasis role="strong">100001 111111 110000 101010 100010 000001</emphasis></para></listitem></itemizedlist></para></listitem>
+     
+      <listitem><para>Convert each value to decimal<itemizedlist> 
+      <listitem><para><emphasis role="strong">33 63 48 42 34 1</emphasis></para></listitem></itemizedlist></para></listitem>
+      
+      <listitem><para>Add 63 to each value<itemizedlist> 
+      <listitem><para><emphasis role="strong">96 126 111 105 97 64 </emphasis></para></listitem></itemizedlist></para></listitem>
+      
+      <listitem><para>Finally convert each value to its ASCII equivalent:<itemizedlist> 
+      <listitem><para><emphasis role="strong">`~oia@</emphasis></para></listitem></itemizedlist></para></listitem>
+  </itemizedlist>
+  
+  <para>This procedure describes the encoding. Please note that the example and a more complete definition can be found on this 
+  <ulink url="https://developers.google.com/maps/documentation/utilities/polylinealgorithm" >page</ulink>.</para>
+  
+  <para>Our procedure<varname> decode_polyline</varname> has to be an inverse function of <varname>encode_polyline</varname> in order to get coordinates 
+  value.  That's the reason why we use <varname>ord</varname> to get the integer representing the unicode character, then we reduce it by removing 63 </para>
+  <para> We decode each character, whenever we get a latitude or longitude, we break. Indeed, the step <varname>OR each value with 0x20 if another bit chunk follow</varname> at the encode
+  process does not apply on the last byte. As a consequence,
+  this byte is lesser than 0x20. Then if necessary we reverse the byte, corresponding to the step <varname>If the original decimal value is negative, invert this encoding</varname> 
+  and we make a right-shift of one bit, corresponding to the step <varname>We take each 32-bit and make a left-shift of one bit</varname>.
+  Finally we divide by a constant number our latitude and longitude and as a result we obtain our coordinate.</para>
+  
+  <para> Note that the step <varname>Place the 5-bit chunks into reverse order</varname> is done in the nested loop by the line <varname>result |= (byte &amp; 0x1f)  &lt;&lt; shift</varname></para>
+	
 	<para>The <varname>setParameters</varname> function encodes the various parameters that will be used when calling the API. 
 Some parameters have a default value if not specified by the user</para>
 

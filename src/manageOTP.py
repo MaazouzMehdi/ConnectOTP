@@ -69,7 +69,7 @@ def decode_polyline(polyline_str):
 				shift += 5
 				if not byte >= 0x20:
 					break
-					
+				
 			if (result & 1):
 				changes[unit] = ~(result >> 1)
 			else:
