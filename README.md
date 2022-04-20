@@ -103,7 +103,7 @@ This gives us an idea of the scalability of our application.
 
 ### Test 1
 
-For this test, we used OSM data from Brussels and GTFS data from the Stib. Here are the results :
+For this test, we used OSM data from Brussels and GTFS data from the STIB. Here are the results :
 
 *  Graph building took 1.3 minutes
 *  The graph build contains : |V| = 139519
@@ -111,3 +111,23 @@ For this test, we used OSM data from Brussels and GTFS data from the Stib. Here 
 *  1 Go was necessery to create the graph
 
 ![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/benchmark1.jpg)
+
+We use multi-trheading to reach more than 27 700 requests per hour which corresponds to 462 queries per minute.
+However an user using this application would be limited to Brussels city and a trip composed exclusively of 2 modalities (STIB agency and the walging).
+
+### Test 2
+
+We created a bounding box allowing us to enlarge our OSM data by taking Brussels and its periphery.
+We increase our modalities up by 1 (we've got STIB angecy, De Lijn agency and the walking). Here are the results :
+
+*  Graph building took 4.8 minutes
+*  The graph build contains : |V| = 232752
+*  The graph build contains |E| = 514152 
+*  4 Go was necessery to create the graph
+
+![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/benchmark2.jpg)
+
+Since the graph is larger (|V| increased by 66 % and |E| incresead by 40 %) and more modalities are available, the average
+number of queries executed per hour decreases significantly compared to our first test. Our application reach 11965 queries per
+hour which corresponds to 200 queries per minute. We observe a 46% reduction in the number of average requests executed by
+the application in a given time
