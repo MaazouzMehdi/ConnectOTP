@@ -87,3 +87,27 @@ The red dot represents people making the trip by public transport
 (The video has been accelerated).
 
 ![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/73advancedtrips.gif?raw=true)
+
+Benchmark
+-----------------------
+
+This section is intended to show the maximum number of requests that can be processed per hour. 
+This gives us an idea of the scalability of our application.
+
+### Machine used
+
+*  Ubuntu 18.04 LTS 
+*  SSD 512 Go 
+*  8Go RAM 
+*  Intel Core i5-5300U CPU running at 2.30GHz (2 physical cores and 2 logical cores)
+
+### Test 1
+
+For this test, we used OSM data from Brussels and GTFS data from the Stib. Here are the results :
+
+*  Graph building took 1.3 minutes
+*  The graph build contains : |V| = 139519
+*  The graph build contains |E| = 367902 
+*  1 Go was necessery to create the graph
+
+![trips_white](https://github.com/MaazouzMehdi/ConnectOTP/blob/main/images/benchmark1.jpg)

@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<chapter id ="benchmark">
+  	<title>Benchmark</title>
+  	
+  	<para>This section is intended to show the maximum number of requests that can be processed per hour. 
+  	                This gives us an idea of the scalability of our application.</para>
+    
+    <para>The various tests were carried out on a local OpenTripPlanner server. 
+    The machine used runs on Ubuntu 18.04 LTS, has 8GB RAM, an 512 Go SSD and an Intel Core i5-5300U CPU running at 2.30GHz (2 physical cores and 2 logical cores).</para>
+      
+        <sect1 id="test1">
+      <title>Test 1</title>
+        
+        <para>For this test, we used OSM data from Brussels and GTFS data from the Stib. Here are the results  :</para>
+              
+            <itemizedlist>
+            <listitem><para>graph building took 1.3 minutes</para></listitem>
+            <listitem><para>the graph build contains : |V| = 139519</para></listitem>
+            <listitem><para>the graph build contains |E| = 367902</para></listitem>
+            <listitem><para>1 Go was necessery to create the graph</para></listitem>
+            <listitem> <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/benchmark1.jpg' width='400pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para></listitem>
+      </itemizedlist>
+      
+      <para>As you can see, the multi-threading allow us to manage  more and more queries until we got the limit of our processor. At full capacity, 
+      we are able to handle over 25,000 requests per hour ( 27 720 more exactly) which corresponds to 462 queries per minute. However an user using this 
+      application would be limited to Brussels and a trip composed of foot/public transport.</para>
+      </sect1>
+      
+      
+       <sect1 id="test2">
+      <title>Test 2</title>
+      <para>In this second test, we created a bounding box allowing us to enlarge our OSM data by taking Brussels and its periphery. 
+      In addition, we have 2 GTFS datasets used by the OpenTripPlanner server. Here are the results :</para>
+      
+                  <itemizedlist>
+            <listitem><para>graph building took 4.8 minutes</para></listitem>
+            <listitem><para>the graph build contains : |V| = 232752</para></listitem>
+            <listitem><para>the graph build contains |E| = 514152</para></listitem>
+            <listitem><para>4 Go was necessery to create the graph</para></listitem>
+            <listitem> <para>
+				  <inlinemediaobject>
+					  <imageobject>
+						  <imagedata fileref='../images/benchmark2.jpg' width='400pt' />
+					  </imageobject>
+				  </inlinemediaobject>
+      </para></listitem>
+      </itemizedlist>
+      
+      <para>Since the graph is larger (|V| increased by 66 % and |E| incresead by 40 %) and more modalities are available, the average number of queries executed per hour decreases significantly compared to our first test.
+      Our application reach 11965 queries per hour which corresponds to 200 queries per minute. 
+      We observe a 46% reduction in the number of average requests executed by the application in a given time</para>
+      
+      </sect1>
+  </chapter>

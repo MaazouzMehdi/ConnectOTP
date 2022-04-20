@@ -8,6 +8,7 @@
 <!ENTITY installation SYSTEM "installation.xml">
 <!ENTITY generating_mobilityDB_trips SYSTEM "generating_mobilityDB_trips.xml">
 <!ENTITY generate_process SYSTEM "generate_process.xml">
+<!ENTITY benchmark SYSTEM "benchmark.xml">
 
 ]>
 <book lang="en">
@@ -45,6 +46,7 @@
 	&installation;
 	&generating_mobilityDB_trips;
 	&generate_process;
+	&benchmark;
 	<index />
 
 </book>

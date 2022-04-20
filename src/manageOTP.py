@@ -96,14 +96,13 @@ route_routeid = 0
 route_legid = 0
 parameters = input("please enter the desired parameters ( key=value ) : ")
 d_parameters = setParameters(parameters)
-   
+cnt = 0
 
 for source, target in match_item :
 	source_id = source
 	cur.execute('SELECT st_astext(the_geom) from optstart where id='+str(source)+';')
 	response = cur.fetchall()
 	coordinate_start = getCoordinate(response)
-	
 	target_id = target
 	cur.execute('SELECT st_astext(the_geom) from opttarget where id='+str(target)+';')
 	response = cur.fetchall()
@@ -129,15 +128,14 @@ for source, target in match_item :
 		route_from_name = route_data['plan']['from']['name']
 	except :
 		route_from_name = None # not available
-		#cur.execute('DELETE from optstart where id='+str(source)+';')
-		#cur.execute('DELETE from opttarget where id='+str(target)+';')
-		#continue
+		continue
 	
 	try :
 		route_errormessage = route_data['error']['message']
 		if route_errormessage == 'LOCATION_NOT_ACCESSIBLE' :
 			cur.execute('DELETE from optstart where id='+str(source)+';')
 			cur.execute('DELETE from opttarget where id='+str(target)+';')
+			cnt +=1
 			continue
 	except :
 		pass

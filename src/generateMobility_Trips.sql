@@ -59,7 +59,7 @@ BEGIN
 		SELECT array_agg(geom ORDER BY path) INTO points FROM ST_DumpPoints(linestring);
 		
 		noSegs = array_length(points, 1) - 1;
-		speed = (trip[i]).route_leg_distance / EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime);
+		speed = (trip[i]).route_leg_distance / (EXTRACT(EPOCH from (trip[i]).route_leg_endtime-(trip[i]).route_leg_starttime) + 0.1);
 		
 		FOR j IN 1..noSegs LOOP
 			p2 = ST_setSRID(points[j + 1],4326);
