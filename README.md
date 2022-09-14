@@ -62,6 +62,15 @@ Documentation
 
 ### Tutorial
 
+`otp-2.1.0-SNAPSHOT-shaded.jar` is a large file, so don't forget to make:
+```
+git lfs pull
+```
+after doing
+```
+git clone <project>
+```
+
 You can generate the tutorial in HTML as well as PDF format. The tutorial is generated in English ( currently working to generate the manual in French as well). For this, you have to run `make_doc.sh` with appropriate options in the cmake command as follows:
 
 *   `-html`: Generate in HTML format
