@@ -4,11 +4,11 @@
   	<title>Setting up the project</title>
         <sect1 id="github">
             <title>Getting the project</title>
-                <para>Please go to the official <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">github</ulink> page of the project and download the various files there, or simply clone the project.
-                Here is the commang to clone the repository</para>
+                <para>Please go to the official <ulink url="https://github.com/MobilityDB/MobilityDB-OpenTripPlanner">github</ulink> page of the project and download the various files there, or simply clone the project.
+                Here is the command to clone the repository</para>
                 
                 <programlisting xml:space="preserve">
-$ git clone https://github.com/MaazouzMehdi/ConnectOTP.git
+$ git clone https://github.com/MobilityDB/MobilityDB-OpenTripPlanner
               </programlisting>
               
             <para>This project contains several files, here is a brief overview :</para>
@@ -16,7 +16,7 @@ $ git clone https://github.com/MaazouzMehdi/ConnectOTP.git
                 <itemizedlist>
                       <listitem><para>make_doc.sh to generate the worksop's documentation.</para></listitem>
                       <listitem><para>workshop/ contains pregenerated versions of workshop's documentation.</para></listitem>
-                     <listitem><para>doc/ contains the necesseray files to generate this workshop.</para></listitem>
+                     <listitem><para>doc/ contains the necessary files to generate this workshop.</para></listitem>
                     <listitem><para>src/ contains the sql and python files that will allow the generation of MobilityTrips.</para></listitem>
 			              <listitem><para>otpData/ contains the files necessary for the WEB OTP server to function properly. These files are :  
 			                    <itemizedlist>
@@ -39,7 +39,7 @@ $ createdb -h localhost -p 5432 -U dbowner brusselsOTP
 -- and dbowner with your database use
       </programlisting>
       <para>this command line allows the creation of the brusselsOTP database that we will use throughout this workshop</para>
-      <para>ConnectOTP is a project that depends on  Postgis, MobilityDB as well as Hstore. This is why we need to add these extensions to our database</para>
+      <para>MobilityDB-OpenTripPlanner is a project that depends on  Postgis, MobilityDB as well as Hstore. This is why we need to add these extensions to our database</para>
       <programlisting xml:space="preserve">
 -- create needed extensions 
 $ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION hstore'
@@ -54,7 +54,8 @@ $ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION Mobi
 $ psql -h localhost -p 5432 -U dbowner -d brusselsOTP  -c 'CREATE EXTENSION MobilityDB CASCADE'
       </programlisting>
       
-      <para>This last command will allow us to create a topology for the city of Brussels by creating two tables, namely <varname>ways</varname> as well as <varname>ways_vertices_pgr</varname></para>
+      <para>This last command will allow us to create a topology for the city of Brussels by creating two tables, namely <varname>ways</varname> as well as <varname>ways_vertices_pgr</varname>.
+      Don't forget to unzip brussels.zip to get brussels.osm</para>
      <programlisting xml:space="preserve">
 $ osm2pgrouting -W 'password' -h localhost -p 5432 -U dbowner -f brussels.osm -d brusselsOTP
 -- replace password by your dbowner's password
@@ -67,7 +68,8 @@ $ osm2pgrouting -W 'password' -h localhost -p 5432 -U dbowner -f brussels.osm -d
     <sect1 id="prepare_openTripPlanner_server">
       <title>Prepare OpenTripPlanner server</title>
       
-        	    <para>In order to contact the OpenTripPlanner API, we will set up a local web server (for now). The .jar file <varname>otp-2.0.0-shaded.jar</varname> is located at the root of the project and corresponds to OpenTripPlanner 2.0 </para>
+        	    <para>In order to contact the OpenTripPlanner API, we will set up a local web server</para>. 
+        	    <para>The .jar file <varname>otp-2.1.0-SNAPSHOT-shaded.jar</varname> is located at the root of the project and corresponds to OpenTripPlanner 2.1 (actually, it corresponds to a modified version of OpenTripPlanner 2.1 which offers a better compatibility with GBFS format, see <ulink url="https://github.com/MobilityDB/MobilityDB-OpenTripPlanner/blob/main/README.md">README.md</ulink> for more information) </para>
   	    
   	    <para>When it is executed, it will use the files in otpData/  to create the graph. By default, when the graph is created, the transit network will contain the GTFS data of the Tec and the Stib. If you want to add a GTFS file, please put it in the otpData/  folder and add its name in the build-config.json file like this.</para>
   	    
@@ -80,19 +82,19 @@ $ osm2pgrouting -W 'password' -h localhost -p 5432 -U dbowner -f brussels.osm -d
   	        <listitem><para>"gtfs" : "stib-gtfs.zip"</para></listitem>
   	    </itemizedlist>
   	    
-  	    <para>Please be careful, for OpenTripPlanner 2 to detect a GTFS file, its name must end in .zip and must contain the letters.
+  	    <para>Please be careful, for OpenTripPlanner to detect a GTFS file, its name must end in .zip and must contain the letters.
                       Now all we have to do is launch our server.</para>
                       
         <programlisting xml:space="preserve">
 -- at the root of the project:
-$ java -Xmx4G -jar otp-2.0.0-shaded.jar   --build --save ./otpData/
+$ java -Xmx4G -jar otp-2.1.0-SNAPSHOT-shaded.jar   --build --save ./otpData/
         </programlisting>
         
         <para>The parameter <varname>-Xmx4G</varname> means that you reserve 4GB of memory in order to build the graph containing our OSM and GTFS data from Stib and Tec. If you decide to use only OSM and Stib data, the parameter <varname>-Xmx2G</varname> would be sufficient. The parameter<varname>--build</varname> means the graph is build and <varname>--save</varname> means we store the graph onto disk.
                         To start the server</para>
         <programlisting xml:space="preserve">
 -- at the root of the project:
-$ java -jar otp-2.0.0-shaded.jar   --load --serve ./otpData/
+$ java -jar otp-2.1.0-SNAPSHOT-shaded.jar   --load --serve ./otpData/
         </programlisting>
 
       <para><varname>--load</varname>  means we load the graph just built before and <varname>--serve</varname> simply means we run  an OTP API server</para>

@@ -20,7 +20,7 @@
 			<listitem><para>Python 3.7<itemizedlist><listitem><para> module psycopg2 (installed via PyPi)</para></listitem>
       </itemizedlist></para></listitem>
 			<listitem><para>QGis 3.22 Białowieża and its module <itemizedlist>
-			  	  <listitem><para>Move ( please follow instructions on <ulink url="https://github.com/mschoema/move">github )</ulink></para></listitem></itemizedlist></para></listitem>
+			  	  <listitem><para>Move ( please follow instructions on <ulink url="https://github.com/mschoema/move">github</ulink>)</para></listitem></itemizedlist></para></listitem>
 		</itemizedlist>
     </sect1>
 

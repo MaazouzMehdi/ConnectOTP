@@ -13,7 +13,7 @@
 ]>
 <book lang="en">
 	<bookinfo>
-		<title>ConnectOTP : Workshop</title>
+		<title>MobilityDB-OpenTripPlanner : Workshop</title>
 		<author>
 			<firstname>Mehdi</firstname>
 			<surname>Maazouz</surname>
@@ -26,17 +26,17 @@
 		<abstract>
 			<para>
 				This workshop is about generating trajectories using <ulink url="https://www.opentripplanner.org/">OpenTripPlanner</ulink> and connect <ulink url="https://github.com/MobilityDB/MobilityDB">MobilityDB</ulink> on those trajectories.
-				This workshop is open source and its code is available on <ulink url="https://github.com/MaazouzMehdi/ConnectOTP">Github</ulink>
+				This workshop is open source and its code is available on <ulink url="https://github.com/MobilityDB/MobilityDB-OpenTripPlanner">Github</ulink>
         The vilualization will be done by <ulink url="https://www.qgis.org/en/site/">Qgis</ulink>
 			</para>
 
 			<para>
-				ConnectOTP is developed by the student Maazouz Mehdi in the framework of his thesis in computer science in the Université Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zimányi.
+				MobilityDB-OpenTripPlanner is developed by the student Maazouz Mehdi in the framework of his thesis in computer science in the Université Libre de Bruxelles (ULB) under the direction of Prof. Esteban Zimányi.
 			</para>
 
 
 			<para>
-				This is the workshop for ConnectOTP.  Feel free to use this material any way you like.
+				This is the workshop for MobilityDB-OpenTripPlanner.  Feel free to use this material any way you like.
 			</para>
 
 		</abstract>

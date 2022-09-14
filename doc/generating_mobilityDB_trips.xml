@@ -69,7 +69,8 @@ $ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.s
        </programlisting>
        
        <para>We now have the mobilitytrips table containing our tgeompoints.
-        As well as a table <varname>stibtrip</varname> containing our tgeompoints which represents the part by public transport, a table <varname>waittrip</varname> which represents the waiting for a transfer and a table <varname>walktrip</varname> which represents walking part.</para>
+        As well as a table <varname>public_transport_trip</varname> containing our tgeompoints which represents the part by public transport, a table <varname>wait_trip</varname> which represents the waiting for a transfer, a table <varname>walk_trip</varname> which represents walking part.
+        The idea is the same for <varname>car_trip</varname> and <varname>bike_trip</varname> tables.</para>
 
       <para>Now let's go to Qgis and open a connection to our BrusselsOTP Database. Once done, click on the <varname>optstart</varname> and <varname>opttarget</varname> tables to display the source node and taget node. The generated nodes are random, so there is a good chance that you will have other nodes</para>
       			  
@@ -80,9 +81,11 @@ $ psql -h localhost -U dbowner -d brusselsOTP  -f ./src/generateMobility_Trips.s
       
       <programlisting xml:space="preserve">
 -- on the plugin Move in Qgis
-select trip as walktrip from walktrip
-select trip as waittrip from waittrip
-select trip as stibtrip from stibtrip
+select trip as walktrip from walk_trip
+select trip as waittrip from wait_trip
+select trip as cartrip from car_trip
+select trip as biketrip from bike_trip
+select trip as publictrip from public_transport_trip
       </programlisting>
       
       <para>Please note that in Belgium we are in UTC+1. I'm currently having trouble displaying the correct time on Move.
@@ -133,9 +136,11 @@ $ psql -h localhost -U dbowner -d brusselsOTP -f ./src/generateMobility_Trips.sq
       
     <programlisting xml:space="preserve">
 -- on the plugin Move in Qgis
-select trip as walktrip from walktrip
-select trip as waittrip from waittrip
-select trip as stibtrip from stibtrip
+select trip as walktrip from walk_trip
+select trip as waittrip from wait_trip
+select trip as cartrip from car_trip
+select trip as biketrip from bike_trip
+select trip as publictrip from public_transport_trip
       </programlisting>
       
       <para> Here is the result</para>
