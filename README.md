@@ -28,6 +28,7 @@ Requirements
 
 *   Linux (other UNIX-like systems may work, but remain untested)
 *   Java >= 11
+*   Git LFS
 *   PostgreSQL >= 11
 *   PostGIS >= 2.5
 *	Python >= 3.0
